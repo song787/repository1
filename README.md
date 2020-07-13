@@ -18,13 +18,13 @@
 
 ### 数据库
 
-#### 				[          数据库原理]()
+  - [数据库原理]()
 
-#### 				[          SQL基础知识](https://github.com/song787/New-repository/blob/master/SQL.md)
+  [SQL基础知识](https://github.com/song787/New-repository/blob/master/SQL.md)
 
-#### 				[          MySQL]()
+  [MySQL]()
 
-#### 				[         Redis]()
+  [Redis]()
 
 ### 设计模式
 
