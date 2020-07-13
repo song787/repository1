@@ -6,7 +6,7 @@ Git
 
 
 
-[SQL基础知识](D:\Song'Document\Mygit\SQL.md)
+[SQL基础知识](https://github.com/song787/New-repository/blob/master/SQL.md)
 
-[SQL]: D:\Song‘Document\Mygit\SQL.md
+[123]: https://github.com/song787/New-repository/blob/master/SQL.md	"sql"
 
