@@ -1,12 +1,38 @@
-Git
+## -------------------------------------- 欢 迎 来 到 我 的 GitHub ---------------------------------------
 
 
 
-### 笔试面试准备
+### << 笔试面试准备 >>
 
 
 
-[SQL基础知识](https://github.com/song787/New-repository/blob/master/SQL.md)
+### 一、数据结构与算法
 
-[123]: https://github.com/song787/New-repository/blob/master/SQL.md	"sql"
+
+
+### 二、 计算机网络
+
+
+
+### 三、操作系统
+
+
+
+### 四、数据库
+
+#### [数据库原理]()
+
+#### [SQL基础知识](https://github.com/song787/New-repository/blob/master/SQL.md)
+
+#### [MySQL]()
+
+#### [Redis]()
+
+### 五、设计模式
+
+
+
+### 六 、网络编程
+
+
 
