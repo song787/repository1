@@ -13,7 +13,7 @@
 
 - [计算机网络](https://github.com/song787/New-repository/blob/master/computer_network.md)
 - HTTP
-- Socket
+- [Socket](https://github.com/song787/New-repository/blob/master/Socket.md)
 
 #### 3\ 操作系统
 
