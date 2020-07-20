@@ -6,12 +6,14 @@
 
 #### 1\ 数据结构与算法
 
-
+- 数据结构部分
+- 基础算法部分
 
 #### 2\ 计算机网络
 
 - [计算机网络](https://github.com/song787/New-repository/blob/master/computer_network.md)
 - HTTP
+- Socket
 
 #### 3\ 操作系统
 
@@ -27,7 +29,7 @@
 
   - [MySQL](https://github.com/song787/New-repository/blob/master/MySQL.md)
 
-  - [Redis]()
+  - Redis
 
 #### 5\ 设计模式
 
