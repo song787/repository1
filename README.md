@@ -42,10 +42,14 @@
 #### 7\ C++
 
 - [一些小问题-1](https://github.com/song787/New-repository/blob/master/C%2B%2B-1.md)
-- [一些小问题-2]
+- [一些小问题-2]()
+- [一些小问题-3]()
 - [STL-接口](https://github.com/song787/New-repository/blob/master/STL-API.md)
 
 #### 8\ 刷题
 
 - [剑指offer部分](https://github.com/song787/New-repository/blob/master/jianzhiOFFER.md)
 
+#### 9\ 其他
+
+- [Git]()
