@@ -42,8 +42,8 @@
 #### 7\ C++
 
 - [一些小问题-1](https://github.com/song787/New-repository/blob/master/C%2B%2B-1.md)
-- [一些小问题-2]()
-- [一些小问题-3]()
+- [一些小问题-2](https://github.com/song787/New-repository/blob/dev/C%2B%2B-2.md)
+- [一些小问题-3](https://github.com/song787/New-repository/blob/dev/C%2B%2B-3.md)
 - [STL-接口](https://github.com/song787/New-repository/blob/master/STL-API.md)
 
 #### 8\ 刷题
@@ -52,4 +52,4 @@
 
 #### 9\ 其他
 
-- [Git]()
+- [Git](https://github.com/song787/New-repository/blob/dev/Git.md)
