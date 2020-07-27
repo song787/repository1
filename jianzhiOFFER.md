@@ -136,5 +136,238 @@ min(max((n mod (i*10))−i+1,0),i)
 
 
 
-### JZ
+### JZ63 数据流中的中位数
+
+```c++
+//运行时间：3ms   占用内存：504k
+
+class Solution {
+public:
+    void Insert(int num)
+    {
+        nums.push_back(num);
+    }
+    double GetMedian()
+    { 
+        int size = nums.size();
+        int i = 0,j = 0;
+        bubbleSort(nums);
+        while(j != size-1 && j != size){
+            i++;
+            j+=2;
+        }
+        if(size % 2 == 0)
+            return (double)(nums[i-1]+nums[i])/2;
+        else
+            return nums[i];        
+    }
+    void bubbleSort(vector<int>& nums){
+        int lo = 0;
+        int hi = nums.size();
+        while(lo < hi){
+            int last = lo;
+            int move = lo;
+            while(++move < hi)
+                if(nums[move-1] > nums[move]){
+                    last = move;
+                    swap(nums[move-1],nums[move]);
+                }
+            hi = last;
+        }
+    }  
+private:
+    vector<int> nums;
+};
+//容器采用 vector ，排序算法用的是bubblesort；查找中位数用的是快慢指针；
+
+//运行时间：3ms 占用内存：504k
+class Solution {
+public:
+    void Insert(int num)
+    {
+        nums.push_back(num);
+    }
+    double GetMedian()
+    { 
+        int size = nums.size();
+        int i = 0，j = 0;
+        mergeSort(nums,0,size);
+        while(j != size-1 && j != size){
+            i++;
+            j+=2;
+        }
+        if(size % 2 == 0)
+            return (double)(nums[i-1]+nums[i])/2;
+        else
+            return nums[i];        
+    }
+    void mergeSort(vector<int>& nums,int lo,int hi){
+        if(hi - lo < 2) return ;
+        int mid = lo + (hi - lo) / 2;
+        mergeSort(nums,lo,mid);
+        mergeSort(nums,mid,hi);
+        merge1(nums,lo,mid,hi);        
+    }
+    void merge1(vector<int>& nums,int lo,int mid,int hi){
+        int hulf_size = mid - lo;
+        vector<int> temp_vec;
+        for(int i = lo;i < mid;i++)
+            temp_vec.push_back(nums[i]);
+        for(int i = lo,j = 0,k = mid;(j < hulf_size || k < hi);){
+            if((j < hulf_size) && (k >= hi || temp_vec[j] <= nums[k]))
+                nums[i++] = temp_vec[j++];
+            if((k < hi) && (j >= hulf_size || temp_vec[j] > nums[k]))
+                nums[i++] = nums[k++];
+        }
+    }
+private:
+    vector<int> nums;
+};
+//容器采用 vector ， 排序算法为归并排序 ， 中位数用的快慢指针；
+```
+
+### JZ42 和为S的两个数字
+
+```c++
+//运行时间：3ms  占用内存：376k
+
+class Solution {
+public:
+    vector<int> FindNumbersWithSum(vector<int> array,int sum) {
+        if(array.empty()) return {};
+        vector<int> res;
+        int multi = INT_MAX;
+        int i = 0;
+        int j = array.size()-1;
+        while(i < j){
+            if(array[i] + array[j] == sum && array[i] * array[j] < multi){
+                multi = array[i] * array[j];
+                res.resize(0);
+                res.push_back(array[i++]);
+                res.push_back(array[j--]);
+            }
+            else if(array[i] + array[j] < sum)
+                ++i;
+            else 
+                --j;
+        }
+        return res;
+    }
+};
+
+//双指针，从两端往中间逼近
+```
+
+### JZ47 求1+2+3...+n
+
+```C++
+//运行时间：2ms 占用内存：492k
+
+class Solution {
+public:
+    int Sum_Solution(int n) {      
+        int ans = n;
+        ans && (ans += Sum_Solution(n-1));  //逻辑与的 短路 特性；
+        return ans;
+    }
+};
+
+```
+
+### JZ12 数值的整数次方
+
+```c++
+//运行时间：3ms  占用内存：376k
+
+class Solution {
+public:
+    double Power(double base, int exponent) {
+        if(exponent == 0) return 1;
+        double res = base;
+        for(int i = abs(exponent)-1;i > 0;i--){
+            res *= base;
+        }
+        if(exponent > 0)
+            return res;
+        else
+            return 1/res;
+    }
+};
+
+//首先判断指数是否为0，如果为0 直接返回1；然后取指数的绝对值，循环求得乘方结果，如果指数是大于零的，直接返回结果，如果指数是小于零的，返回结果分之一；
+```
+
+### JZ11 二进制中1的个数（*）
+
+```c++
+//运行时间：3ms  占用内存：376k
+class Solution {
+public:
+     int  NumberOf1(int n) {
+         int count = 0;
+         int flag = 1;
+         while(flag != 0){
+             if((flag & n) != 0)
+                 ++count;
+             flag = flag << 1;
+         }
+         return count;
+     }
+};
+
+//运行时间：2ms  占用内存：376k
+class Solution {
+public:
+     int  NumberOf1(int n) {
+         int count = 0;
+         while(n != 0){
+             ++count;
+             n = n & (n-1);
+         }
+         return count;
+     }
+};
+
+//可能陷入死循环的方法是因为>>右移是带符号位右移的导致，右移空出来的位子都是1所以进入死循环。如果把n=n>>1改成n=n>>>1就不会进入死循环了。
+```
+
+### JZ49 把字符串转换成整数（不是中缀表达式问题） 
+
+```C++
+//运行时间：4ms  占用内存：488k
+
+class Solution {
+public:
+    int StrToInt(string str) {
+        if(str.empty()) return 0;
+        vector<int> temp;
+        bool flag = true;
+        for(int i = 0;i < str.size();++i){
+            if(str[i] >= 'a' && str[i] <= 'z')
+                return 0;
+            if(str[i] == '-')
+                flag = false;
+            if(str[i] >= '0' && str[i] <= '9'){
+                char ch = str[i] - '0';
+                temp.push_back((int)ch);
+            }
+        }
+        int res = 0;
+        int size = temp.size()-1;
+        for(int i = 0;i < temp.size();++i,--size){
+            res += temp[i] * pow(10,size);
+        }
+        if(!flag)
+            return -res;
+        else
+            return res;        
+    }
+};
+
+//就是多了一些非法字符 以及 在开始给了正负号的 一个字符串转换为int型的问题，有非法字符就返回0；
+
+//优化：
+//运行时间：3ms  占用内存：380k
+//把符号的判断移除循环，因为本题中的符号只会出现在开头位置；
+```
 
