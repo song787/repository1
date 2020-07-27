@@ -1,27 +1,33 @@
 ## --------------------------- G i t H u b ---------------------------
 
-`日常学习记录`
+`记录学习`
+
+<img src="C:\Users\Jianlin Song\Downloads\e7eb9e98027b72816eb6ac15297306ec_看图王.jpg"  />
 
 
 
-#### 1\ 数据结构与算法
+
+
+
+
+#### :one: 数据结构与算法
 
 - [数据结构部分]
 - [基础算法部分]
 
-#### 2\ 计算机网络
+#### :two: 计算机网络
 
 - [计算机网络](https://github.com/song787/New-repository/blob/master/computer_network.md)
 - HTTP
 - [Socket](https://github.com/song787/New-repository/blob/master/Socket.md)
 
-#### 3\ 操作系统
+#### :three: 操作系统
 
 - [计算机操作系统](https://github.com/song787/New-repository/blob/master/OS.md)
 
 - linux
 
-#### 4\ 数据库
+#### :four: 数据库
 
   - [数据库原理](https://github.com/song787/New-repository/blob/master/Datebase.md)
 
@@ -31,25 +37,28 @@
 
   - Redis
 
-#### 5\ 设计模式
+#### :five: 设计模式
 
+- 
 
+#### :six: ​网络编程
 
-#### 6\ 网络编程
+- linux高性能服务器编程
 
-
-
-#### 7\ C++
+#### :seven: C++
 
 - [一些小问题-1](https://github.com/song787/New-repository/blob/master/C%2B%2B-1.md)
 - [一些小问题-2](https://github.com/song787/New-repository/blob/dev/C%2B%2B-2.md)
 - [一些小问题-3](https://github.com/song787/New-repository/blob/dev/C%2B%2B-3.md)
 - [STL-接口](https://github.com/song787/New-repository/blob/master/STL-API.md)
 
-#### 8\ 刷题
+#### :eight: 刷题
 
 - [剑指offer部分](https://github.com/song787/New-repository/blob/master/jianzhiOFFER.md)
 
-#### 9\ 其他
+#### :nine: 其他
 
 - [Git](https://github.com/song787/New-repository/blob/dev/Git.md)
+
+
+
