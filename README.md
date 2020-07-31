@@ -4,6 +4,8 @@
 >
 > 学习记录
 
+![2](https://github.com/song787/New-repository/blob/dev/welcome.jpg)
+
 
 
 #### :one: 数据结构与算法
