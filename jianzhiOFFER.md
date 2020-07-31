@@ -371,3 +371,188 @@ public:
 //把符号的判断移除循环，因为本题中的符号只会出现在开头位置；
 ```
 
+### JZ50 数组中重复的数字
+
+```c++
+//运行时间：2ms  占用内存：604k
+class Solution {
+public:
+    // Parameters:
+    //        numbers:     an array of integers
+    //        length:      the length of array numbers
+    //        duplication: (Output) the duplicated number in the array number
+    // Return value:       true if the input is valid, and there are some duplications in the array number
+    //                     otherwise false
+    bool duplicate(int numbers[], int length, int* duplication) {
+        
+        map<int,int> mymap;
+        for(int i = 0;i < length;++i){
+            mymap[numbers[i]]++;
+            if(mymap[numbers[i]] > 1){
+                *duplication = numbers[i];
+                return true;
+            }
+        }
+        return false;       
+    }
+};
+```
+
+### JZ40 数组中只出现一次的数字
+
+```c++
+//运行时间：2ms  占用内存：584k
+
+class Solution {
+public:
+    void FindNumsAppearOnce(vector<int> data,int* num1,int *num2) {
+        if(data.empty()) return ;
+        quickSort(data,0,data.size());
+        cout<<data[0]<<" "<<data[1]<<" "<<data[2]<<" "<<data[3]<<endl;
+        vector<int> res;
+        for(int i = 0,j = 1;i < data.size() && j <= data.size();++i,++j){
+            if(j == data.size())
+                res.push_back(data[i]);
+            else{
+                if(data[i] != data[j])
+                    res.push_back(data[i]);
+                else{
+                    ++i;
+                    ++j;
+                }
+            }
+        }
+        *num1 = res[0];
+        *num2 = res[1];    
+    }
+private:
+    void quickSort(vector<int>& nums,int lo,int hi){
+        if(hi - lo < 2) return ;
+        int pivot = pratition(nums,lo,hi);
+        quickSort(nums,lo,pivot);
+        quickSort(nums,pivot+1,hi);
+    }
+    
+    int pratition(vector<int>& nums,int lo,int hi){
+        swap(nums[lo],nums[lo+rand()%(hi-lo)]);
+        int mid = lo;
+        int pivot = nums[lo];
+        for(int k = lo+1;k < hi;k++){
+            if(nums[k] < pivot)
+                swap(nums[++mid],nums[k]);
+        }
+        swap(nums[mid],nums[lo]);
+        return mid;
+    }
+};
+//先利用快排对数组进行一次排序，然后用双指针，紧挨着一前一后，如果两个元素相同则都移动两步，如果两个元素不同，则都移动一步；
+```
+
+### JZ37 数字在排序数组中出现的次数
+
+```c++
+//运行时间：3ms  占用内存：376k
+class Solution {
+public:
+    int GetNumberOfK(vector<int> data ,int k) {
+        if(data.empty()) return 0;
+        int count = 0;
+        for(int i = 0;i < data.size();++i){
+            if(data[i] == k)
+                ++count;
+        }
+        return count;
+    }
+};
+
+//运行时间：2ms  占用内存：476k
+//利用二分查找分别找k值的最左边位置和最后边位置，然后相减得到数量；
+class Solution {
+public:
+    int GetNumberOfK(vector<int> data ,int k) {
+        if(data.empty()) return 0;
+        int left = binsearch_left(data,k);
+        int right = binsearch_right(data,k);
+        return right - left + 1;
+    }
+    int binsearch_left(vector<int>& data,int k){
+        int lo = 0;
+        int hi = data.size();
+        while(lo < hi){
+            int mid = lo + (hi -lo) / 2;
+            if(data[mid] < k)
+                lo = mid + 1;
+            else
+                hi = mid;             
+        }
+        return lo;
+    }
+    int binsearch_right(vector<int>& data,int k){
+        int lo = 0;
+        int hi = data.size();
+        while(lo < hi){
+            int mid = lo + (hi - lo) / 2;
+            if(data[mid] <= k)
+                lo = mid + 1;
+            else
+                hi = mid;
+        }
+        return lo - 1;
+    }
+};
+```
+
+### JZ30 连续子数组的最大和
+
+```c++
+//运行时间：2ms  占用内存：488k
+
+class Solution {
+public:
+    int FindGreatestSumOfSubArray(vector<int> array) {
+        if(array.size() == 1) return array[0];
+        int size = array.size();
+        int max_value = INT_MIN;
+        int sum = 0;
+        for(int i = 0;i < size;++i){
+            sum += array[i];
+            max_value = max(max_value,sum);
+            if(sum < 0)
+                sum = 0;
+        }
+        return max_value;
+    }
+};
+
+
+```
+
+
+
+
+
+```c++
+#include<iostream>
+#inculde<vector>
+
+using namespace std;
+
+int main() {
+    
+    
+    
+    return 0;
+}
+
+class Aclass{
+public:
+    
+private:
+   
+}
+
+
+
+
+```
+
