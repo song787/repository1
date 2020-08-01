@@ -527,6 +527,76 @@ public:
 
 ```
 
+### JZ 最小的K个数
+
+```c++
+//运行时间：3ms  占用内存：504k
+
+class Solution {
+public:
+    vector<int> GetLeastNumbers_Solution(vector<int> input, int k) {
+        if(input.empty() || k > input.size()) return {};
+        quickSort(input,0,input.size());
+        vector<int> res;
+        for(int i = 0;i < k;++i)
+            res.push_back(input[i]);
+        return res;
+    }
+    void quickSort(vector<int>& nums,int lo,int hi){
+        if(hi - lo < 2) return ;
+        int mid = partition(nums,lo,hi);
+        quickSort(nums,lo,mid);
+        quickSort(nums,mid+1,hi);        
+    }
+    int partition(vector<int>& nums,int lo,int hi){
+        swap(nums[lo],nums[lo+rand()%(hi - lo)]);
+        int mid = lo;
+        int pivot = nums[lo];
+        for(int k = lo + 1;k < hi;++k){
+            if(nums[k] < pivot)
+                swap(nums[++mid],nums[k]);
+        }
+        swap(nums[mid],nums[lo]);
+        return mid;
+    }
+};
+//利用快排对数组进行排序，然后按照顺序输出K个最小的数字即可；
+
+```
+
+### JZ数组中出现次数超过一般的数字
+
+```c++
+//运行时间：2ms  占用内存：476k
+
+class Solution {
+public:
+    int MoreThanHalfNum_Solution(vector<int> numbers) {
+        if(numbers.empty()) return 0;
+        int count = 0;
+        int target;
+        for(int k = 0;k < numbers.size();++k){
+            if(count == 0){
+                target = numbers[k];
+                count = 1;
+            }
+            else
+                target == numbers[k] ? ++count : --count;
+        }
+        int num = 0;
+        for(int k = 0;k < numbers.size();++k)
+            if(numbers[k] == target)
+                ++num;
+        if(num > numbers.size()/2)
+            return target;
+        else
+            return 0;
+    }
+};
+//求众数；剪枝思想；
+
+```
+
 
 
 
