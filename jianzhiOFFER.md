@@ -527,7 +527,7 @@ public:
 
 ```
 
-### JZ 最小的K个数
+### JZ29 最小的K个数
 
 ```c++
 //运行时间：3ms  占用内存：504k
@@ -596,6 +596,104 @@ public:
 //求众数；剪枝思想；
 
 ```
+
+### JZ1 二维数组中的查找
+
+```c++
+//8ms	1444KB
+
+class Solution {
+public:
+    bool Find(int target, vector<vector<int> > array) {
+        int m = array.size();
+        int n = array[0].size();
+        int res = -1;
+        for(int i = 0;i < m && res == -1;i ++){
+            if(array[i][0] <= target){
+                int res = binsearch(array[i],target,n);
+                if(res !=  -1)
+                    return true;
+            }
+        }
+        return false;
+    }
+    int binsearch(vector<int>& nums,int target,int n){
+        int lo = 0;
+        int hi = n;
+        while(lo < hi){
+            int mid = lo + (hi - lo) / 2;
+            if(nums[mid] == target)
+                return mid;
+            else if(nums[mid] > target)
+                hi = mid;
+            else
+                lo = mid + 1;
+        }
+        return -1;
+    }
+};
+```
+
+### JZ13 调整数组顺序使奇数位于偶数前面
+
+```c++
+//运行时间：2ms 占用内存：376k
+
+class Solution {
+public:
+    void reOrderArray(vector<int> &array) {
+        if(array.empty()) return ;
+        int last = array.size()-1;
+        for(int i = 0;i < last;++i)
+            for(int j = 0;j < last;++j)
+                if(iseven(array[j]) && !iseven(array[j+1]))
+                   swap(array[j],array[j+1]);
+    }
+    bool iseven(int num){
+        if(num % 2 == 0)
+            return true;
+        else
+            return false;
+    }
+};
+//借用冒泡排序的思想，遇到偶数在前奇数在后的数对就要swap
+```
+
+### JZ 把数组排成最小的数
+
+```c++
+//运行时间：3ms  占用内存：496k
+
+class Solution {
+public:
+    string PrintMinNumber(vector<int> numbers) {
+        if(numbers.empty()) return "";
+        sort(numbers.begin(),numbers.end(),mycmp());
+        string res;
+        
+        for(int i = 0;i < numbers.size();++i){
+            res += to_string(numbers[i]);
+        }
+        return res;
+    }
+    class mycmp{
+        public:
+        bool operator()(int num1,int num2){
+            string temp1 = to_string(num1) + to_string(num2);
+            string temp2 = to_string(num2) + to_string(num1);
+            if(temp1 < temp2)
+                return true;
+            else
+                return false;
+        }
+    };
+};
+
+//利用函数 to_string(); 
+//std::to_string是C++标准(2011年)的最新版本中引入的功能。将数值转化为字符串。返回对应的字符串。
+```
+
+
 
 
 
