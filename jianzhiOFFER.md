@@ -659,7 +659,7 @@ public:
 //借用冒泡排序的思想，遇到偶数在前奇数在后的数对就要swap
 ```
 
-### JZ 把数组排成最小的数
+### JZ32 把数组排成最小的数
 
 ```c++
 //运行时间：3ms  占用内存：496k
@@ -691,6 +691,299 @@ public:
 
 //利用函数 to_string(); 
 //std::to_string是C++标准(2011年)的最新版本中引入的功能。将数值转化为字符串。返回对应的字符串。
+```
+
+### JZ66 机器人的运动范围
+
+```c++
+//运行时间：2ms  占用内存：504k
+
+class Solution {
+private:
+    vector<pair<int,int>> dir = {{0,1},{0,-1},{1,0},{-1,0}};
+    int maxnum = 0;
+public:
+    int movingCount(int threshold, int rows, int cols)
+    {
+        vector<vector<int>> flag(rows+1,vector<int>(cols+1,0));
+        dfs(0,0,threshold,rows,cols,flag);
+        return maxnum;
+    }
+    void dfs(int cur_rows,int cur_cols,int& threshold,int& rows,int& cols,vector<vector<int>>& flag){
+        int temp_rows = cur_rows;
+        int temp_cols = cur_cols;
+        int sum = 0;
+        while(temp_rows || temp_cols){
+            sum += (temp_rows%10 + temp_cols%10);
+            temp_rows /= 10;
+            temp_cols /= 10;
+        }
+        if(sum > threshold)
+            return ;
+        maxnum++;
+        flag[cur_rows][cur_cols] = 1;
+        for(auto ele:dir){
+            int next_i = cur_rows + ele.first;
+            int next_j = cur_cols + ele.second;
+            if(next_i >= rows || next_i < 0 || next_j >= cols || next_j < 0 || flag[next_i][next_j])
+                continue;
+            dfs(next_i,next_j,threshold,rows,cols,flag);
+        }
+    }
+};
+
+//DFS
+
+
+
+```
+
+### JZ64 滑动窗口的最大值
+
+```c++
+//运行时间：2ms  占用内存：376k
+
+class Solution {
+public:
+    vector<int> maxInWindows(const vector<int>& num, unsigned int size)
+    {
+        if(size > num.size() || size == 0) return {};
+        vector<int> res;
+        for(int i = size;i <= num.size();++i){
+            res.push_back(max_num(num,i-size,i));
+        }
+        return res;
+    }
+    int max_num(vector<int> num , int lo, int hi ){
+        int maxvalue = 0;
+        for(int i = lo;i < hi;++i)
+            maxvalue = max(maxvalue,num[i]);
+        return maxvalue;
+    }
+};
+
+```
+
+### JZ19 顺时针打印矩阵
+
+```c++
+//3ms	396KB
+
+class Solution {
+public:
+    vector<int> printMatrix(vector<vector<int> > matrix) {
+        int left_i = 0;
+        int left_j = 0;
+        int right_i = matrix.size() - 1;
+        int right_j = matrix[0].size() - 1;
+        vector<int> res;      
+        while(left_i <= right_i && left_j <= right_j){
+            for(int i = left_j;i <= right_j;++i)
+                res.push_back(matrix[left_i][i]);
+            for(int i = left_i + 1;i < right_i;++i)
+                res.push_back(matrix[i][right_j]);
+            for(int i = right_j;i >= left_j && (left_i != right_i);--i)
+                res.push_back(matrix[right_i][i]);
+            for(int i = right_i - 1;i > left_i && (left_j != right_j);--i)
+                res.push_back(matrix[i][left_j]);
+            ++left_i;++left_j;
+            --right_i;--right_j;
+        }
+        return res;
+    }
+};
+
+//利用左上角顶点与右下角顶点实现定位，围绕着这两个点构成的矩阵来遍历；
+```
+
+### JZ 数组中的逆序对
+
+```c++
+//运行时间：108ms   占用内存：4268k
+
+class Solution {
+public:
+    int InversePairs(vector<int> data) {
+        int res = mergeSort(data,0,data.size());
+        return res;
+    }
+    int mergeSort(vector<int>& nums, int lo, int hi){
+        if(hi-lo < 2) return 0;
+        int mid = lo + (hi-lo)/2;
+        int left = mergeSort(nums,lo,mid);
+        int right = mergeSort(nums,mid,hi);
+        int num = merge(nums,lo,mid,hi);
+        return (left+right+num)%1000000007;
+    }
+    int merge(vector<int>& nums,int lo,int mid,int hi){
+        int count = 0;
+        int size = mid - lo;
+        vector<int> temp_nums;
+        for(int i = lo;i < mid;i++)
+            temp_nums.push_back(nums[i]);
+        for(int i = lo,j = 0,k = mid;(j < size) || (k < hi);){
+            if((j < size) && (k >= hi || (temp_nums[j] <= nums[k])))
+                nums[i++] = temp_nums[j++];
+            if((k < hi) && (j >= size || (nums[k] < temp_nums[j]))){
+                nums[i++] = nums[k++];
+                count += size - j;
+                if(count >= 1000000007)
+                    count %= 1000000007;
+            }  
+        }
+        return count;
+    }
+};
+```
+
+### JZ2 替换空格
+
+```c++
+//运行时间：4ms  占用内存：504k
+
+class Solution {
+public:
+	void replaceSpace(char *str,int length) {
+        char * ptr = str;
+        for(int i = 0;i < length;++i)
+            if(ptr[i] == ' '){
+                for(int j = length-i-1;j > 0;--j)
+                    ptr[i+j+2] = ptr[i+j];
+                ptr[i] = '%';
+                ptr[i+1] = '2';
+                ptr[i+2] = '0';                
+            }
+    }
+};
+
+//遇到空格就把空格后面的字符串整体后移两位，然后将空格处修改为%20；
+```
+
+### JZ43 左旋转字符串
+
+```c++
+//运行时间：4ms  占用内存：376k
+
+class Solution {
+public:
+    string LeftRotateString(string str, int n) {
+        
+        if(str.empty()) return "";
+        reverse(str.begin(),str.begin()+n);
+        reverse(str.begin()+n,str.end());
+        reverse(str.begin(),str.end());
+		return str;
+    }
+};
+
+
+
+```
+
+### JZ54 字符流中第一个不重复的字符
+
+```c++
+//运行时间：3ms  占用内存：584k
+
+class Solution
+{
+public:
+  //Insert one char from stringstream
+    void Insert(char ch)
+    {
+         str += ch;
+    }
+  //return the first appearence once char in current stringstream
+    char FirstAppearingOnce()
+    {
+        map<char,int> mymap;
+        for(auto ele:str)
+            mymap[ele]++;
+        vector<char> vec;
+        for(auto ele:mymap)
+            if(ele.second == 1)
+                vec.push_back(ele.first);
+        if(vec.empty()) return '#';
+        int min_index = INT_MAX;
+        char res;
+        for(auto ele:vec){
+            int index = str.find(ele);
+            if(index < min_index){
+                min_index = index;
+                res = ele;
+            }                
+        }
+        return res;
+    }
+    
+private:
+    string str;
+};
+
+```
+
+### JZ34 第一个只出现一次的字符
+
+```c++
+//运行时间：4ms  占用内存：376k
+
+class Solution {
+public:
+    int FirstNotRepeatingChar(string str) {
+        if(str.empty()) return -1;
+        
+        map<char,int> mymap;
+        for(auto ele:str)
+            mymap[ele]++;
+        vector<char> vec;
+        for(auto ele:mymap){
+            if(ele.second == 1)
+                vec.push_back(ele.first);
+        }
+        if(vec.empty()) return -1;
+        int min_index = INT_MAX;
+        for(auto ele:vec){
+            int index = str.find(ele);
+            min_index = min(index,min_index);
+        }
+        return min_index;
+    }
+};
+
+//利用map实现str元素出现次数的计数，把所有出现次数为1的char放入vector中，然后依次str.find(ele)，记录最小的下标；
+```
+
+### JZ53 表示数值的字符串*
+
+```c++
+//运行时间：3ms  占用内存：388k
+
+class Solution {
+public:
+    bool isNumeric(char* string)
+    {
+        bool hasE = false, sign = false, decimal = false;
+        for(int i = 0;i < strlen(string);++i){
+            if(string[i] == 'e' || string[i] == 'E'){
+                if(i == strlen(string)-1) return false;
+                if(hasE) return false;
+                hasE = true;
+            }
+            else if(string[i] == '-' || string[i] == '+'){
+                if(sign && string[i-1] != 'e' && string[i-1] != 'E') return false;
+                if(!sign && i != 0 && string[i-1] != 'e' && string[i-1] != 'E') return false;
+                sign = true;
+            }
+            else if(string[i] == '.'){
+                if(decimal || hasE) return false;
+                decimal = true;
+            }
+            else if(string[i] < '0' || string[i] > '9')
+                return false;
+        }
+        return true;
+    }
+};
 ```
 
 
