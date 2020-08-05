@@ -986,6 +986,380 @@ public:
 };
 ```
 
+### JZ45 扑克牌顺子
+
+```c++
+//运行时间：3ms  占用内存：376k
+
+class Solution {
+public:
+    bool IsContinuous( vector<int> numbers ) {
+        if(numbers.empty()) return false;
+        sort(numbers.begin(),numbers.end());
+        int count_0 = 0;
+        int value_not0 = 0;
+        int last_not0 = 0;
+        int first_not0 = INT_MAX;
+        for(auto ele:numbers)
+            if(ele == 0)
+                ++count_0;
+            else{
+                if(ele == last_not0)
+                    return false;
+                else{
+                    first_not0 = min(first_not0,ele);
+                    value_not0 += (ele - last_not0 - 1);
+                    last_not0 = ele;
+                }
+            }
+        value_not0 -= (first_not0 - 1);
+        if(count_0 >= value_not0) return true;
+        else return false;
+    }
+};
+
+```
+
+### JZ44 反转单词顺序列
+
+```c++
+//运行时间：4ms  占用内存：488k
+
+class Solution {
+public:
+    string ReverseSentence(string str) {
+        if(str.empty()) return "";
+        vector<int> index;
+        index.push_back(-1);
+        int size = str.size();
+        for(int i = 0;i < size;++i)
+            if(str[i] == ' ')
+                index.push_back(i);
+        index.push_back(size);
+        for(int i = 0;i < index.size()-1;++i)
+            reverse(str.begin()+index[i]+1,str.begin()+index[i+1]);
+        reverse(str.begin(),str.end());
+        return str;
+    }
+};
+
+//类似于JZ43左旋转字符串，对字符串的子串做反转，然后对整个字符串做反转；
+```
+
+### JZ27 字符串的排列
+
+```c++
+//运行时间：5ms  占用内存：488k
+
+class Solution {
+private:
+    vector<string> res;  
+public:
+    vector<string> Permutation(string str) {
+        
+        if(str.empty()) return {};
+        vector<int> trace(str.size(),0);        
+        string str_cur;
+        backtrace(str,trace,res,str_cur);
+        sort(res.begin(),res.end());
+        return res;
+    }
+    void backtrace(string str,vector<int>& trace,vector<string>& res, string str_cur){
+        if(str_cur.size() > str.size())
+            return ;
+        else if(str.size() == str_cur.size()){
+            if(find(res.begin(),res.end(),str_cur) == res.end())
+                res.push_back(str_cur);
+            return ;
+        }
+        for(int i = 0;i < str.size();++i){
+            if(trace[i] == 1) continue;
+            trace[i] = 1;
+            str_cur += str[i];
+            backtrace(str,trace,res,str_cur);
+            str_cur.pop_back();
+            trace[i] = 0;            
+        }
+    }
+};
+
+//利用回溯的方式完成str中元素的排列组合，push到vector容器中，然后sort字典排序；
+```
+
+### JZ52 正则表达式匹配
+
+```c++
+//运行时间：3ms  占用内存：376k
+
+class Solution {
+public:
+    bool match(char* str, char* pattern)
+    {
+        int i = 0,j = 0;
+        int size_str = strlen(str),size_pattern = strlen(pattern);
+        if(size_str == 0 && size_pattern == 0) return true;
+        while(j < size_pattern){
+            if(i == size_str)
+                if(j+1 == size_pattern-1 && pattern[j+1] == '*')
+                    return true;
+                else
+                    return false;
+            if(j != size_pattern - 1 && pattern[j+1] == '*')
+                if(str[i] != pattern[j] && pattern[j] != '.')//*前一位不匹配且不等于'.'
+                    j += 2;
+                else if(pattern[j] == '.'){//*前一位不匹配但是等于'.'
+                    j += 2;
+                    while(i != size_str && str[++i] != pattern[j]);
+                }
+                else{//*前一位是与str[i]想匹配的
+                    return match(str+i,pattern+j+2) || match(str+i+1,pattern) || match(str+i+1,pattern+j+2);
+                }
+            else if(pattern[j] == '.' || str[i] == pattern[j]){
+                ++i;
+                ++j;
+            }
+            else
+                return false;
+        }
+        if(i == size_str) return true;
+        else return false;
+    }
+};
+```
+
+### JZ15 反转链表
+
+```c++
+//运行时间：3ms  占用内存：472k
+
+/*
+struct ListNode {
+	int val;
+	struct ListNode *next;
+	ListNode(int x) :
+			val(x), next(NULL) {
+	}
+};*/
+class Solution {//利用stack作为辅助容器
+public:
+    ListNode* ReverseList(ListNode* pHead) {
+        stack<int> vec;
+        ListNode* ptr = pHead;
+        while(pHead != nullptr){
+            vec.push(pHead->val);
+            pHead = pHead->next;            
+        }            
+        pHead = ptr;
+        while(!vec.empty()){
+            pHead->val = vec.top();
+            vec.pop();
+            pHead = pHead->next;
+        }
+        return ptr;
+    }
+};
+
+//运行时间：3ms  占用内存：488k
+
+/*
+struct ListNode {
+	int val;
+	struct ListNode *next;
+	ListNode(int x) :
+			val(x), next(NULL) {
+	}
+};*/
+class Solution {//手动构造当前节点的pre节点与next节点；
+public:
+    ListNode* ReverseList(ListNode* pHead) {
+        if(pHead == nullptr) return nullptr;
+        ListNode* pre = nullptr;
+        ListNode* next = nullptr;
+        while(pHead != nullptr){
+            next = pHead->next;
+            pHead->next = pre;
+            pre = pHead;
+            pHead = next;            
+        }
+        return pre;
+    }
+};
+```
+
+### JZ14 链表中倒数第K个节点
+
+```c++
+//运行时间：3ms  占用内存：504k
+
+/*
+struct ListNode {
+	int val;
+	struct ListNode *next;
+	ListNode(int x) :
+			val(x), next(NULL) {
+	}
+};*/
+class Solution {
+public:
+    ListNode* FindKthToTail(ListNode* pListHead, unsigned int k) {
+        if(pListHead == nullptr) return nullptr;
+        ListNode* first = pListHead;
+        ListNode* second = pListHead;
+        for(int i = 0;i < k;++i){
+            if(second == nullptr)
+                return nullptr;
+            second = second->next;
+        }
+        while(second != nullptr){
+            second = second->next;
+            first = first->next;
+        }
+        return first;            
+    }
+};
+
+//双指针完成，second指针先移动k位，然后双指针同步后移，当second移动到nullptr的时候，first指针所在位置就是倒数第K个节点；
+```
+
+### JZ16 合并两个排序的链表
+
+```c++
+//运行时间：3ms 占用内存：376k
+
+/*
+struct ListNode {
+	int val;
+	struct ListNode *next;
+	ListNode(int x) :
+			val(x), next(NULL) {
+	}
+};*/
+class Solution {//非递归解法
+public:
+    ListNode* Merge(ListNode* pHead1, ListNode* pHead2)
+    {
+        if(pHead1 == nullptr || pHead2 == nullptr) 
+            return pHead1 == nullptr ? pHead2 : pHead1;
+        ListNode* resHead = new ListNode(0);
+        ListNode* ptr = resHead;
+        while(pHead1 != nullptr && pHead2 != nullptr){
+            if(pHead1->val <= pHead2->val){
+                ptr->next = new ListNode(pHead1->val);
+                pHead1 = pHead1->next;
+            }
+            else{
+                ptr->next = new ListNode(pHead2->val);
+                pHead2 = pHead2->next;
+            }
+            ptr = ptr->next;
+        }
+        ptr->next = pHead1 == nullptr ? pHead2 : pHead1;
+        return resHead->next;
+    }
+};
+//指针一定要初始化，否则总是报段错误；
+
+
+//运行时间：3ms  占用内存：456k
+
+/*
+struct ListNode {
+	int val;
+	struct ListNode *next;
+	ListNode(int x) :
+			val(x), next(NULL) {
+	}
+};*/
+class Solution {//递归解法
+public:
+    ListNode* Merge(ListNode* pHead1, ListNode* pHead2)
+    {
+        if(pHead1 == nullptr || pHead2 == nullptr) 
+            return pHead1 == nullptr ? pHead2 : pHead1;
+        if(pHead1->val <= pHead2->val){
+            pHead1->next = Merge(pHead1->next,pHead2);
+            return pHead1;
+        }
+        else{
+            pHead2->next = Merge(pHead1,pHead2->next);
+            return pHead2;
+        }
+    }
+};
+```
+
+### JZ36 两个链表的第一个公共节点*
+
+```c++
+//解法一：不记录长度
+//运行时间：3ms  占用内存：504k
+/*
+struct ListNode {
+	int val;
+	struct ListNode *next;
+	ListNode(int x) :
+			val(x), next(NULL) {
+	}
+};*/
+class Solution {
+public:
+    ListNode* FindFirstCommonNode( ListNode* pHead1, ListNode* pHead2) {
+        
+        ListNode* first = pHead1;
+        ListNode* second = pHead2;
+        while(first != second){
+            first = first == nullptr ? pHead2 : first->next;
+            second = second == nullptr ? pHead1 : second->next;
+        }
+        return first;
+    }
+};
+//长度相同有公共结点，第一次就遍历到；没有公共结点，走到尾部NULL相遇，返回NULL
+//长度不同有公共结点，第一遍差值就出来了，第二遍一起到公共结点；没有公共，一起到结尾NULL。
+
+//解法二：记录长度
+
+```
+
+### JZ55 链表中环的入口节点
+
+```c++
+//运行时间：2ms  占用内存：492k
+
+/*
+struct ListNode {
+    int val;
+    struct ListNode *next;
+    ListNode(int x) :
+        val(x), next(NULL) {
+    }
+};
+*/
+class Solution {
+public:
+    ListNode* EntryNodeOfLoop(ListNode* pHead)
+    {
+        if(pHead->next == pHead) return pHead;
+        ListNode* first = pHead->next;
+        if(first == nullptr)
+            return nullptr;
+        ListNode* second = pHead->next->next;
+        while(first != second){
+            first = first->next;
+            if(second == nullptr || second->next == nullptr)
+                return nullptr;
+            second = second->next->next;
+        }
+        second = pHead;
+        while(second != first){
+            first = first->next;
+            second = second->next;
+        }
+        return first;
+    }
+};
+```
+
 
 
 
