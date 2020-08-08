@@ -1360,7 +1360,217 @@ public:
 };
 ```
 
+### JZ46 圆圈中最后剩下的数
 
+```c++
+//运行时间：17ms  占用内存：504k
+
+class Solution {
+public:
+    int LastRemaining_Solution(int n, int m)
+    {
+        if(m == 0 || n == 0)return -1;
+        list<int> child;
+        for(int i = 0;i < n;++i){
+            child.push_back(i);    
+        }
+        auto it = child.begin();
+        while(child.size() > 1){
+            int count = 0;
+            while(count < m-1){
+                ++count;
+                ++it;
+                if(it == child.end())
+                    it = child.begin();
+            }
+            auto temp_it = ++it;
+            if(temp_it == child.end())
+                temp_it = child.begin();
+            child.erase(--it);
+            it = temp_it;
+        }
+        return child.back();
+    }
+};
+```
+
+### JZ56 删除链表中重复的节点； 
+
+```c++
+//运行时间：2ms  占用内存：492k
+
+/*
+struct ListNode {
+    int val;
+    struct ListNode *next;
+    ListNode(int x) :
+        val(x), next(NULL) {
+    }
+};
+*/
+class Solution {
+public:
+    ListNode* deleteDuplication(ListNode* pHead)
+    {
+        if(pHead == nullptr) return nullptr;
+        ListNode* pre = nullptr;
+        ListNode* cur = pHead;
+        ListNode* next = pHead->next;
+        
+        while(next != nullptr){
+            if(cur->val == next->val){
+                while(next != nullptr && next->val == cur->val)
+                    next = next->next;
+                if(cur == pHead)
+                    pHead = next;
+                else
+                    pre->next = next;
+                cur = next;
+                if(next != nullptr)
+                    next = next->next;
+            }
+            else{
+                pre = cur;
+                cur = next;
+                next = next->next;
+            }
+        }
+        return pHead;
+    }
+};
+```
+
+### JZ25 复杂链表的复制**
+
+```c++
+//运行时间：3ms  占用内存：488k
+
+/*
+struct RandomListNode {
+    int label;
+    struct RandomListNode *next, *random;
+    RandomListNode(int x) :
+            label(x), next(NULL), random(NULL) {
+    }
+};
+*/
+class Solution {
+public:
+    RandomListNode* Clone(RandomListNode* pHead)
+    {
+        if(pHead == nullptr) return nullptr;
+        RandomListNode* cur = nullptr;
+        RandomListNode* pre = pHead;
+        while(pre != nullptr){
+            cur = new RandomListNode(pre->label);
+            cur->next = pre->next;
+            pre->next = cur;
+            pre = cur->next;
+        }
+        
+        pre = pHead;
+        while(pre != nullptr){
+            cur = pre->next;
+            cur->random = pre->random == nullptr ? nullptr : pre->random->next;
+            pre = cur->next;
+        }
+        
+        cur = pHead;
+        RandomListNode* next = nullptr;
+        RandomListNode* head = cur->next; 
+        while(cur != nullptr){
+            next = cur->next;
+            cur->next = next->next;
+            cur = next->next;
+            next->next = cur == nullptr ? nullptr : cur->next;
+        }
+        return head;        
+    }
+};
+```
+
+### JZ26 二叉搜索树与双向链表**
+
+```c++
+//运行时间：2ms  占用内存：380k
+
+/*
+struct TreeNode {
+	int val;
+	struct TreeNode *left;
+	struct TreeNode *right;
+	TreeNode(int x) :
+			val(x), left(NULL), right(NULL) {
+	}
+};*/
+class Solution {
+public:
+    TreeNode* Convert(TreeNode* pRootOfTree)
+    {
+        TreeNode* cur = pRootOfTree;
+        TreeNode* pre = nullptr;
+        stack<TreeNode*> s;
+        bool isFirst = true;
+        TreeNode* head = nullptr;
+        while(cur != nullptr || !s.empty()){
+            while(cur != nullptr){
+                s.push(cur);
+                cur = cur->left;
+            }
+            cur = s.top();
+            s.pop();
+            if(isFirst){
+                head = cur;
+                pre = cur;
+                isFirst = false;
+            }
+            else{
+                pre->right = cur;
+                cur->left = pre;
+                pre = cur;
+            }
+            cur = cur->right;
+        }
+        return head;        
+    }
+};
+```
+
+### JZ4 重建二叉树**
+
+```c++
+//运行时间：5ms占用内存：608k  
+
+/**
+ * Definition for binary tree
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* reConstructBinaryTree(vector<int> pre,vector<int> vin) {
+        TreeNode* root = reConstructBinaryTree(pre,0,pre.size()-1,vin,0,vin.size()-1);
+        return root;
+    }
+private:
+    TreeNode* reConstructBinaryTree(vector<int> pre,int startPre,int endPre,vector<int> vin,int startIn,int endIn){
+        if(startPre > endPre || startIn > endIn)
+            return nullptr;
+        TreeNode* root = new TreeNode(pre[startPre]);
+        for(int i = startIn;i <= endIn;++i)
+            if(vin[i] == pre[startPre]){
+                root->left = reConstructBinaryTree(pre,startPre+1,startPre+i-startIn,vin,startIn,i-1);
+                root->right = reConstructBinaryTree(pre,startPre+i-startIn+1,endPre,vin,i+1,endIn);
+                break;
+            }
+        return root;
+    }
+};
+```
 
 
 

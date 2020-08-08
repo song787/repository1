@@ -129,7 +129,7 @@ void travIn_I1(Binnode<T>* t,VST& visit){
     if(!t) return;
     while(true){
         while(t){
-            s.push(t->left);
+            s.push(t);
             t = t->left;            
         }
         if(s.empty()) break;
