@@ -1676,7 +1676,7 @@ public:
 //那么T满足：T可以分成两段，前一段（左子树）小于x，后一段（右子树）大于x，且这两段（子树）都是合法的后序序列。完美的递归定义 : ) 。
 ```
 
-### JZ 二叉树中和为某一值的路径
+### JZ24  二叉树中和为某一值的路径
 
 ```c++
 //运行时间：2ms  占用内存：376k 
@@ -1724,6 +1724,29 @@ private:
 };
 //思路：DFS+回溯的方式
 
+```
+
+### JZ39  平衡二叉树
+
+```c++
+//运行时间：2ms  占用内存：480k
+
+class Solution {
+public:
+    bool IsBalanced_Solution(TreeNode* pRoot) {
+        return tree_deep(pRoot) != -1;
+    }
+    int tree_deep(TreeNode* root){
+        if(root == nullptr)
+            return 0;
+        int left = tree_deep(root->left);
+        if(left == -1) return -1;
+        int right = tree_deep(root->right);
+        if(right == -1) return -1;
+        return abs(right-left) > 1 ? -1 : (max(right,left)+1);
+    }
+};
+//自下往上的遍历；
 ```
 
 
