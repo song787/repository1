@@ -12,11 +12,11 @@
 
 - [数据结构部分]
 - [基础算法部分]
-- [算法](https://github.com/song787/New-repository/blob/dev/algorithm.md)
+- [算法](https://github.com/song787/New-repository/blob/master/algorithm.md)
 
 #### :two: 计算机网络
 
-- [计算机网络](https://github.com/song787/New-repository/blob/dev/computer_network.md)
+- [计算机网络](https://github.com/song787/New-repository/blob/master/computer_network.md)
 - HTTP
 - [Socket](https://github.com/song787/New-repository/blob/master/Socket.md)
 
@@ -47,19 +47,20 @@
 #### :seven: C++
 
 - [一些小问题-1](https://github.com/song787/New-repository/blob/master/C%2B%2B-1.md)
-- [一些小问题-2](https://github.com/song787/New-repository/blob/dev/C%2B%2B-2.md)
-- [一些小问题-3](https://github.com/song787/New-repository/blob/dev/C%2B%2B-3.md)
+- [一些小问题-2](https://github.com/song787/New-repository/blob/master/C%2B%2B-2.md)
+- [一些小问题-3](https://github.com/song787/New-repository/blob/master/C%2B%2B-3.md)
 - [STL-接口](https://github.com/song787/New-repository/blob/master/STL-API.md)
 
 #### :eight: 刷题
 
 - [剑指offer部分](https://github.com/song787/New-repository/blob/master/jianzhiOFFER.md)
+- [leetcode TOP100](https://github.com/song787/New-repository/blob/master/leetcode_top100.md)
 
 #### :nine: 其他
 
-- [Git](https://github.com/song787/New-repository/blob/dev/Git.md)
+- [Git](https://github.com/song787/New-repository/blob/master/Git.md)
 - [000](https://github.com/song787/New-repository/blob/master/Ques_and_ans.md)
-- 1
+- 111
 
 
 
