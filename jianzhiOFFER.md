@@ -40,10 +40,6 @@ public:
 */
 ```
 
-
-
-
-
 ### JZ31-整数中1出现的次数（从1到n整数中1出现的次数）
 
 ```c++
@@ -133,8 +129,6 @@ sum1 = sum(count(i))，i = Math.pow(10, j), 0<=j<=log10(n)
 min(max((n mod (i*10))−i+1,0),i)
 */
 ```
-
-
 
 ### JZ63 数据流中的中位数
 
@@ -1570,6 +1564,166 @@ private:
         return root;
     }
 };
+```
+
+### JZ17 树的子结构
+
+```c++
+//运行时间：2ms  占用内存：480k
+
+/*
+struct TreeNode {
+	int val;
+	struct TreeNode *left;
+	struct TreeNode *right;
+	TreeNode(int x) :
+			val(x), left(NULL), right(NULL) {
+	}
+};*/
+class Solution {
+public:
+    bool HasSubtree(TreeNode* pRoot1, TreeNode* pRoot2)
+    {
+        if(pRoot1 == nullptr || pRoot2 == nullptr)
+            return false;
+        bool flag = false;
+        if(pRoot1->val == pRoot2->val)
+            flag = subtree(pRoot1,pRoot2);
+        if(!flag)
+            flag = HasSubtree(pRoot1->left,pRoot2);
+        if(!flag)
+            flag = HasSubtree(pRoot1->right,pRoot2);
+        return flag;
+    }
+    bool subtree(TreeNode* root1,TreeNode* root2){
+        if(root2 == nullptr)
+            return true;
+        else if(root1 == nullptr)
+            return false;
+        if(root1->val != root2->val)
+            return false;
+        return subtree(root1->left,root2->left) && subtree(root1->right,root2->right);
+    }
+};
+//判断当前节点，如果相等，则判断结构，如果不等则递归自己的左子树与右子树；
+```
+
+### JZ22 从上往下打印二叉树
+
+```c++
+//运行时间：2ms  占用内存：504k
+
+/*
+struct TreeNode {
+	int val;
+	struct TreeNode *left;
+	struct TreeNode *right;
+	TreeNode(int x) :
+			val(x), left(NULL), right(NULL) {
+	}
+};*/
+class Solution {
+public:
+    vector<int> PrintFromTopToBottom(TreeNode* root) {
+        if(root == nullptr) return {};
+        queue<TreeNode*> que;
+        que.push(root);
+        vector<int> res;
+        while(!que.empty()){
+            TreeNode* root = que.front();
+            que.pop();
+            res.push_back(root->val);
+            if(root->left != nullptr)
+                que.push(root->left);
+            if(root->right != nullptr)
+                que.push(root->right);      
+        }
+        return res;
+    }
+};
+//借助队列，分别访问当前节点，并且把当前节点的左子节点与右子节点入队列，直到队列为空的时候就停止；
+```
+
+### JZ23 二叉搜索树的后序遍历序列
+
+```c++
+//运行时间：2ms  占用内存：504k
+
+class Solution {
+public:
+    bool VerifySquenceOfBST(vector<int> sequence) {
+        if(sequence.empty())  return false;
+        return judge(sequence,0,sequence.size()-1);
+    }
+    bool judge(vector<int> sequence,int lo,int hi){
+        if(lo >= hi) return true;
+        int root = sequence[hi];
+        int count = lo;
+        bool flag = false;
+        for(int i = lo;i < hi;++i){
+            if(flag == false && sequence[i] < root)
+                ++count;
+            else{
+                flag = true;
+                if(sequence[i] < root)
+                     return false;       
+            }
+        }
+        return judge(sequence,lo,count-1) && judge(sequence,count,hi-1);       
+    }
+};
+//BST的后序序列的合法序列是，对于一个序列S，最后一个元素是x （也就是根），如果去掉最后一个元素的序列为T
+//那么T满足：T可以分成两段，前一段（左子树）小于x，后一段（右子树）大于x，且这两段（子树）都是合法的后序序列。完美的递归定义 : ) 。
+```
+
+### JZ 二叉树中和为某一值的路径
+
+```c++
+//运行时间：2ms  占用内存：376k 
+
+/*
+struct TreeNode {
+	int val;
+	struct TreeNode *left;
+	struct TreeNode *right;
+	TreeNode(int x) :
+			val(x), left(NULL), right(NULL) {
+	}
+};*/
+class Solution {
+private:
+    vector<vector<int>> res;
+    int sum = 0;
+public:
+    vector<vector<int> > FindPath(TreeNode* root,int expectNumber) {
+        
+        if(root == nullptr) return {};
+        vector<int> vec;
+        backtrace(root,expectNumber,vec);
+        return res;
+    }
+private:
+    void  backtrace(TreeNode* curptr, int expectNumber, vector<int> vec){
+        vec.push_back(curptr->val);
+        sum += curptr->val;
+        if(!curptr->left && !curptr->right)
+            if(expectNumber == sum)
+                res.push_back(vec);
+            else{
+                sum -= curptr->val;
+                vec.pop_back();
+                return ;
+            }
+        if(curptr->left != nullptr)
+            backtrace(curptr->left,expectNumber,vec);
+        if(curptr->right != nullptr)
+            backtrace(curptr->right,expectNumber,vec);
+        vec.pop_back();        
+        sum -= curptr->val;
+    }
+};
+//思路：DFS+回溯的方式
+
 ```
 
 
