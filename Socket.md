@@ -11,29 +11,7 @@
 
 
 
-
-
 #### 2、I/O复用
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -87,7 +65,7 @@ typedef struct in_addr
 ```
 
 ```c++
-//inet_addr
+//inet_addr(arpa/inet.h)
 in_addr_t inet_addr(const char* strptr);
 /*
 inet_addr方法可以转化字符串，主要用来将一个十进制的数转化为二进制的数，用途多于ipv4的IP转化。
