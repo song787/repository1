@@ -75,7 +75,7 @@ void travPre_R (Binnode<T>* t, VST& visit){
 template<typename T, typename VST>
 void travPre_I1 (Binnode<T>* t, VST& visit){
     stack<Binnode<T>*> s;
-    if(t) s.push(s);
+    if(t) s.push(t);
     while(!s.empty()){
         Binnode<T>* temp = s.pop();
         if(temp->right != NULL)
@@ -166,13 +166,13 @@ void travPos_R(Binnode<T>* t,VST& visit){
     travPos_R(t->right,visit);
     visit(t->data);
 }
-//后序遍历 迭代版
+//后序遍历 迭代版(课件)
 template<typename T,typename VST>
 void travPos_R(Binnode<T>* t,VST& visit){
     stack<Binnode<T>*> s;   //辅助栈
     if(t) s,push(t);	    //根节点入栈
     while(!s.empty()){			
-        if(s.pop() != t->parent){ //若栈顶非当前节点之父（则必为其右兄），此时需在以其右兄为根之子树中，找到HLVFL（相当于递归深入其中）
+        if(s.top() != t->parent){ //若栈顶非当前节点之父（则必为其右兄），此时需在以其右兄为根之子树中，找到HLVFL（相当于递归深入其中）
             while(Binnode<T>* x = s.top()){ //在以S栈顶节点为根的子树中，找到最高左侧可见叶节点，沿途所遇节点依次入栈，自顶而下，反复检查当前节点
                 if(x->left != NULL){//尽可能向左
                     if(x->right != NULL)//若有右孩子，优先入栈
@@ -188,6 +188,44 @@ void travPos_R(Binnode<T>* t,VST& visit){
         t = s.pop();//弹出栈顶（即前一节点之后继），并访问之
         visit(t->data);            
     }
+//后序遍历 迭代版（leetcode）
+    /**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root) {
+        vector<int> ret;
+        stack<TreeNode*> s;
+        set<TreeNode*> myset;
+        if(root) s.push(root);
+
+        while(!s.empty()){
+            root = s.top();
+            bool leftVisited = true, rightVisited = true;
+            if(root->right && myset.find(root->right) == myset.end()){
+                s.push(root->right);
+                rightVisited = false;
+            }
+            if(root->left && myset.find(root->left) == myset.end()){
+                s.push(root->left);
+                leftVisited = false;
+            }
+            if(leftVisited && rightVisited){
+                ret.push_back(root->val);
+                myset.insert(root);
+                s.pop();
+            }
+        }
+        return ret;        
+    }
+};
 ```
 
 ### 7. 广度优先遍历
@@ -323,7 +361,7 @@ public:
     void merge(vector<int>& nums,int lo,int mid,int hi){
         vector<int> temp_nums;
         for(int i = lo;i < mid;i++)
-            temp_nums1.push_back(nums[i]);
+            temp_nums.push_back(nums[i]);
         for(int i = lo,j = 0,k = mid;(j < mid) || (k < hi);){
             if((j < mid) && (k >= hi || (temp_nums[j] <= nums[k])))
                 nums[i++] = temp_nums[j++];
