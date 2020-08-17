@@ -1223,6 +1223,25 @@ singleton* singleton::getinstence(){
 
 懒汉双锁式，也存在一定的线程不安全问题，主要原因就在于一个指令重排的问题，首先在`instence = new singleton();`这一句中，new的顺序是先申请变量内存，然后初始化，最后将变量给到instence，但是因为指令重排的原因，可能是先执行3再执行2，这就导致thread1再new的3过程时，thread2进入getinstence（），这时候会出现if判断instence已经存在，就直接返回了instence，而这个instence是未初始化的instence，导致线程的不安全；解决方式是将new这个过程原子化；
 
+#### 饿汉式
+
+```c++
+class singleton{
+private:
+    static singleton *instence = new singleton();
+private:
+    singleton(){
+        
+    }
+public:
+    static singleton *getinstence(){
+        return instence;
+    }
+}
+```
+
+
+
 ## 5. 数据库
 
 
@@ -1261,8 +1280,6 @@ singleton* singleton::getinstence(){
 - 为什么摒弃auto_ptr
 - unique_ptr为什么优于auto_ptr
 - 如何选择只能指针
-
-
 
 #### 完美转发
 
