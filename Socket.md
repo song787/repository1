@@ -5,33 +5,300 @@
 - 在网络传输中用于唯一标识两个端点（IP+Port）之间的连接；
 - 组成：客户端地址、客户端端口，服务端地址、服务端端口；
 
-### Socket相关技术
+### socket建立服务器端与客户端的流程
 
-#### 1、阻塞与非阻塞
+```c++
+//socket建立TCP连接-服务器端
+/*
+步骤：
+1.socket()创建TCP套接字                                                                              
+2.bind()将创建的套接字绑定到一个本地地址和端口上                                        
+3.listen()，将套接字设为监听模式，准备接受客户请求                                        
+4.accept()等用户请求到来时接受，返回一个对应此连接新套接字   
+5.用accept()返回的套接字和客户端进行通信，recv()/send() 接受/发送信息。                               
+6.返回，等待另一个客户请求。
+7.关闭套接字
+*/
+
+//socket()创建TCP套接字   
+int socket(int af, int type, int protocol);
+/*
+af：af为地址族，常用的是AF_INET代表IPv4，AF_INET6代表IPv6；  本机地址用127.0.0.1表示；
+type：数据传输的方式；SOCK_STREAM（流格式套接字/面向连接的套接字）、SOCK_DGRAM（数据报套接字/无连接的套接字）；
+protocol：表示传输协议，IPPROTO_TCP 表示TCP协议，IPPROTO_UDP表示UDP协议；
+*/
+SOCKET server = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+
+//bind()将创建的套接字绑定到一个本地地址和端口上        
+int bind(SOCKET s,const sockaddr *name,int namelen);
+/*
+s：传入一个被绑定的套接字；
+name：一个指向套接字地址类型的指针；
+namelen：
+*/
+sockaddr_in serveraddr;//创建套接字地址类型的变量； 
+serveraddr.sin_family = AF_INET;//为变量填充内容
+serveraddr.sin_port = htons(1234);
+serveraddr.sin_addr.s_addr = inet_addr("192.168.1.102");
+bind(server,(SOCKADDR *) &serveraddr,sizeof(serveraddr));//完成套接字与本地的绑定操作；
+
+//listen()，将套接字设为监听模式，准备接受客户请求      
+int listen(SOCKET s,int backlog);
+/*
+s:传入一个用来监听的套接字；
+backlog：可以连接客户机的最大数，也就是内核监听队列的最大长度；
+*/
+listen(server,5);
+
+//accept()等用户请求到来时接受，返回一个对应此连接新套接字  
+SOCKET accept(SOCKET s, sockaddr* addr, int * addrlen);
+/*
+s:监听者的套接字；
+addr：用来获取被接受连接的远端socket地址，客户机地址信息；
+addrlen：指出上面addr地址的长度；
+返回值为连接socket的文件描述符；
+*/
+sockaddr_in clientaddr;
+int len = sizeof(clientaddr);
+SOCKET client = accept(server,(SOCKADDR*) &clientaddr, &len);
+
+//用accept()返回的套接字和客户端进行通信，recv()/send() 接受/发送信息。   
+int recv(SOCKET s, char *buf, int len, int flags);
+/*
+s:客户机的socket；
+buf：接收数据的缓冲区；
+len：接收数据的长度；
+flags：标志位；
+*/
+char recvdata[1024] = {0};
+recv(client,recvdata,1023,0);    
+```
+
+```c++
+//socket建立TCP连接-客户端
+/*
+1.socket()创建TCP套接字。
+2.connect()建立到达服务器的连接。
+3.与客户端进行通信，recv()/send()接受/发送信息，write()/read() 子进程写入管道，父进程从管道中读取信息然后send给客户端。
+4. close() 关闭客户连接。
+*/
+
+//socket()创建TCP套接字。
+SOCKET client = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+
+//connect()建立到达服务器的连接。
+int connect(SOCKET s,sockaddr *addr, int * addrlen);
+SOCKADDR_IN serveraddr;
+serveraddr.sin_family = AF_INET;//为变量填充内容
+serveraddr.sin_port = htons(1234);
+serveraddr.sin_addr.s_addr = inet_addr("192.168.1.102");
+connect(client,(SOCKADDR*)& serveraddr,sizeof(serveraddr));
+
+//与客户端进行通信，recv()/send()接受/发送信息，write()/read() 子进程写入管道，父进程从管道中读取信息然后send给客户端。
+int send(SOCKET s, char *buf, int len, int flags);
+char buf[1024];
+send(client,buf,len,0);
+
+//close() 关闭客户连接。
+```
+
+```c++
+//UDP
+/*
+UDP通信的过程如图所示：
+服务端：
+（1）使用函数socket()，生成套接字文件描述符；
+（2）通过struct sockaddr_in 结构设置服务器地址和监听端口；
+（3）使用bind() 函数绑定监听端口，将套接字文件描述符和地址类型变量（struct sockaddr_in ）进行绑定；
+（4）接收客户端的数据，使用recvfrom() 函数接收客户端的网络数据；
+（5）向客户端发送数据，使用sendto() 函数向服务器主机发送数据；
+（6）关闭套接字，使用close() 函数释放资源；
+客户端：
+（1）使用socket()，生成套接字文件描述符；
+（2）通过struct sockaddr_in 结构设置服务器地址和监听端口；
+（3）向服务器发送数据，sendto() ；
+（4）接收服务器的数据，recvfrom() ；
+（5）关闭套接字，close() ；
+*/
+//recvfrom替代recv函数，用于接收一个数据包，并且保存源地址；
+int WSAAPI recvfrom{
+    SOCKET s,//绑定到服务器端的socket；
+    char *buf,
+   	int len,
+    int flags,
+    sockaddr *from,
+    int *fromlen
+};//返回值为接收的字节数；
+//sendto替代send函数；
+```
 
 
 
-#### 2、I/O复用
+## Socket相关技术
+
+### socket地址解析
+
+```c++
+INT WSAAPI getaddrinfo(//ANSI码主机名到地址 与协议无关的转换；即ANSI主机名->对应的套接字
+  PCSTR           pNodeName,
+  PCSTR           pServiceName,
+  const ADDRINFOA *pHints,
+  PADDRINFOA      *ppResult
+);
+typedef struct addrinfo {
+  int             ai_flags;
+  int             ai_family;
+  int             ai_socktype;
+  int             ai_protocol;
+  size_t          ai_addrlen;
+  char            *ai_canonname;
+  struct sockaddr *ai_addr;
+  struct addrinfo *ai_next;
+} ADDRINFOA, *PADDRINFOA;
+
+INT WSAAPI getnameinfo(//由套接字来解析主机名；
+  const SOCKADDR *pSockaddr,
+  socklen_t      SockaddrLength,
+  PCHAR          pNodeBuffer,
+  DWORD          NodeBufferSize,
+  PCHAR          pServiceBuffer,
+  DWORD          ServiceBufferSize,
+  INT            Flags
+);
+```
+
+### 阻塞与非阻塞
+
+
+
+### I/O复用
+
+#### 1. select
+
+```c++
+int WSAAPI select(
+  	int nfds,  //是一个整数值，是指集合中所有文件描述符的范围，即所有文件描述符的最大值加1，不能错！在Windows中这个参数值无所谓，可以设置不正确。
+    fd_set *readfds, //这个集合中应该包括文件描述符，我们是要监视这些文件描述符的读变化的，即我们关心是否可以从这些文件中读取数据;
+    fd_set *writefds, //这个集合中应该包括文件描述符，我们是要监视这些文件描述符的写变化的，即我们关心是否可以向这些文件中写入数据;
+    fd_set *exceptfds, //用来监视文件错误异常;一般设置为NULL；
+    struct timeval *timeout//timeout是select的超时时间，NULL则表示为阻塞状态，如果设置为0秒0毫秒则为非阻塞状态，大于0则为等待的时间；
+);//返回值：大于0成功调用，小于0为出错，等于0为超时；
+
+FD_ZERO(fd_set *fdset);//清空fdset与所有文件句柄的联系。      
+FD_SET(int fd, fd_set *fdset);//建立文件句柄fd与fdset的联系。      
+FD_CLR(int fd, fd_set *fdset);//清除文件句柄fd与fdset的联系。      
+FD_ISSET(int fd, fd_set *fdset);//检查fdset联系的文件句柄fd是否可读写，>0表示可读写。
+```
+
+#### 2. poll
+
+```c++
+int poll(
+    struct pollfd *fds, 
+    unsigned int nfds, 
+    int timeout
+);
+struct pollfd {
+    int   fd;         /* file descriptor */
+    short events;     /* requested events */
+    short revents;    /* returned events */
+};
+```
+
+#### 3. select与poll的比较
+
+1、select 和 poll 的功能基本相同，不过在一些实现细节上有所不同。
+
+- select 会修改描述符，而 poll 不会；
+- select 的描述符类型使用数组实现，FD_SETSIZE 大小默认为 1024，因此默认只能监听少于 1024 个描述符。如果要监听更多描述符的话，需要修改 FD_SETSIZE 之后重新编译；而 poll 没有描述符数量的限制；
+- poll 提供了更多的事件类型，并且对描述符的重复利用上比 select 高。
+- 如果一个线程对某个描述符调用了 select 或者 poll，另一个线程关闭了该描述符，会导致调用结果不确定。
+
+2、速度：select 和 poll 速度都比较慢，每次调用都需要将全部描述符从应用进程缓冲区复制到内核缓冲区。
+
+3、可移植性：几乎所有的系统都支持 select，但是只有比较新的系统支持 poll。
+
+#### 4. epoll
+
+```c++
+int epoll_create(int size);
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)；//epoll_ctl() 用于向内核注册新的描述符或者是改变某个文件描述符的状态。
+int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout);//已注册的描述符在内核中会被维护在一棵红黑树上，通过回调函数内核会将 I/O 准备好的描述符加入到一个链表中管理，进程调用 epoll_wait() 便可以得到事件完成的描述符。
+```
+
+`epoll`的特点：
+
+- epoll 只需要将描述符从进程缓冲区向内核缓冲区拷贝一次，并且进程不需要通过轮询来获得事件完成的描述符。
+- epoll 仅适用于 Linux OS。
+- epoll 比 select 和 poll 更加灵活而且没有描述符数量限制。
+- epoll 对多线程编程更有友好，一个线程调用了 epoll_wait() 另一个线程关闭了同一个描述符也不会产生像 select 和 poll 的不确定情况。
+
+epoll的工作模式：
+
+ET模式：当 epoll_wait() 检测到描述符事件到达时，将此事件通知进程，进程可以不立即处理该事件，下次调用 epoll_wait() 会再次通知进程。是默认的一种模式，并且同时支持 Blocking 和 No-Blocking。
+
+LT模式：和 LT 模式不同的是，通知之后进程必须立即处理事件，下次再调用 epoll_wait() 时不会再得到事件到达的通知。很大程度上减少了 epoll 事件被重复触发的次数，因此效率要比 LT 模式高。只支持 No-Blocking，以避免由于一个文件句柄的阻塞读/阻塞写操作把处理多个文件描述符的任务饿死。
+
+```c++
+Epoll 用法（三步曲）：
+第一步：int epoll_create(int size)系统调用，创建一个epoll句柄，参数size用来告诉内核监听的数目，size为epoll支持的最大句柄数。
+第二步:int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)  事件注册函数参数 epfd为epoll的句柄。参数op 表示动作 三个宏来表示：EPOLL_CTL_ADD注册新fd到epfd 、EPOLL_CTL_MOD 修改已经注册的fd的监听事件、EPOLL_CTL_DEL从epfd句柄中删除fd。参数fd为需要监听的标识符。参数结构体epoll_event告诉内核需要监听的事件。
+第三步：int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout) 等待事件的产生，通过调用收集在epoll监控中已经发生的事件。参数struct epoll_event 是事件队列 把就绪的事件放进去。
+
+eg. 服务端使用epoll的时候步骤如下：
+1.调用epoll_create()在linux内核中创建一个事件表。
+2.然后将文件描述符(监听套接字listener)添加到事件表中
+3.在主循环中，调用epoll_wait()等待返回就绪的文件描述符集合。
+4.分别处理就绪的事件集合，本项目中一共有两类事件：新用户连接事件和用户发来消息事件。
+```
+
+#### 5. 三种IO复用的应用场景
+
+##### 1. select 应用场景
+
+select 的 timeout 参数精度为微秒，而 poll 和 epoll 为毫秒，因此 select 更加适用于实时性要求比较高的场景，比如核反应堆的控制。
+
+select 可移植性更好，几乎被所有主流平台所支持。
+
+##### 2. poll 应用场景
+
+poll 没有最大描述符数量的限制，如果平台支持并且对实时性要求不高，应该使用 poll 而不是 select。
+
+##### 3. epoll 应用场景
+
+只需要运行在 Linux 平台上，有大量的描述符需要同时轮询，并且这些连接最好是长连接。
+
+需要同时监控小于 1000 个描述符，就没有必要使用 epoll，因为这个应用场景下并不能体现 epoll 的优势。
+
+需要监控的描述符状态变化多，而且都是非常短暂的，也没有必要使用 epoll。因为 epoll 中的所有描述符都存储在内核中，造成每次需要对描述符的状态改变都需要通过 epoll_ctl() 进行系统调用，频繁系统调用降低效率。并且 epoll 的描述符存储在内核，不容易调试。
+
+
+
+### IO多路复用与多进程
+
+如果压力不是很大，并且处理性能相对于IO可以忽略不计
+
+- IO多路复用+单进（线）程比较省资源
+- 适合处理大量的闲置的IO
+- IO多路复用+多单进（线）程与线程池方案相比有好处，但是并不会有太大的优势
+
+如果压力很大，什么方案都得跪，这时就得扩容。当然因为IO多路复用+单进（线）程比较省资源，所以扩容时能省钱。
 
 
 
 ## 常用函数
 
-#### sockaddr_in
+#### sockaddr_in 
 
-此数据结构用做bind、connect、recvfrom、sendto等函数的参数，指明地址信息。
+此数据结构用做bind、connect、recvfrom、sendto等函数的参数，指明地址信息,是socket的地址数据类型。
 
 ```c++
 //sockaddr_in（在netinet/in.h中定义）：
 struct sockaddr_in{ 
-//Address family一般来说AF_INET（地址族）PF_INET（协议族）  
-short sin_family;
-//Port number(必须要采用网络数据格式,普通数字可以用htons()函数转换成网络数据格式的数字)    
-unsigned short sin_port;
-//IP address in network byte order（Internet address）
-struct in_addr sin_addr;
-//Same size as struct sockaddr没有实际意义,只是为了　跟SOCKADDR结构在内存中对齐
-unsigned char sin_zero[8];
+short sin_family; //地址族AF_INET（IPV4）PF_INET（IPV4）   
+unsigned short sin_port;//Port number(必须要采用网络数据格式,普通数字可以用htons()函数转换成网络数据格式的数字)   
+struct in_addr sin_addr; //用inet_addr("");
+unsigned char sin_zero[8];//Same size as struct sockaddr没有实际意义,只是为了跟SOCKADDR结构在内存中对齐
 };
 
 //（在WinSock2.h中定义）：
@@ -41,11 +308,15 @@ struct sockaddr_in {
         struct  in_addr sin_addr;
         char    sin_zero[8];
 };
-```
 
-```c++
+//inet_addr(arpa/inet.h)
+in_addr_t inet_addr(const char* strptr);
+/*
+inet_addr方法可以转化字符串，主要用来将一个十进制的数转化为二进制的数，用途多于ipv4的IP转化。
+返回：若字符串有效则将字符串转换为32位二进制网络字节序的IPV4地址，否则为INADDR_NONE
+*/
+
 //in_addr结构
-
 //linux下：
 typedef uint32_t in_addr_t;
 struct in_addr
@@ -62,15 +333,6 @@ typedef struct in_addr
             unsigned long S_addr;
     }S_un;
 }in_addr;
-```
-
-```c++
-//inet_addr(arpa/inet.h)
-in_addr_t inet_addr(const char* strptr);
-/*
-inet_addr方法可以转化字符串，主要用来将一个十进制的数转化为二进制的数，用途多于ipv4的IP转化。
-返回：若字符串有效则将字符串转换为32位二进制网络字节序的IPV4地址，否则为INADDR_NONE
-*/
 ```
 
 #### bzero（）
@@ -118,7 +380,7 @@ format -- 这是字符串，包含了要被写入到字符串 str 的文本。�
 */
 ```
 
-#### strnacsecmp()
+#### strnacsecmp( )
 
 ```c++
 int strncasecmp(const char *s1, const char *s2, size_t n);
@@ -144,7 +406,10 @@ stream -- 这是指向 FILE 对象的指针，该 FILE 对象标识了要从中�
 
 #### stdin
 
-stdin是C语言中标准输入流，一般用于获取键盘输入到缓冲区里的东西。
+```c++
+//stdin是C语言中标准输入流，一般用于获取键盘输入到缓冲区里的东西。
+//作为fgets( )的stream参数可以实现读键盘输入到指定字符串的功能
+```
 
-作为fgets( )的stream参数可以实现读键盘输入到指定字符串的功能
+
 
