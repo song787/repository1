@@ -1980,35 +1980,123 @@ public:
 };
 ```
 
-
-
- 
-
-
+### JZ 剪绳子
 
 ```c++
-#include<iostream>
-#inculde<vector>
-
-using namespace std;
-
-int main() {
-    
-    
-    
-    return 0;
-}
-
-class Aclass{
+class Solution {
 public:
-    
-private:
-   
-}
-
-
-
-
+    int cutRope(int number) {
+        if(number == 0) return 0;
+        
+        int count_3 = 0;
+        while(number >= 3){
+            number -= 3;
+            ++count_3;
+        }
+        if(number == 0)
+            return pow(3,count_3);
+        else if(number == 1)
+            return pow(3,count_3-1)*4;
+        else if(number == 2)
+            return pow(3,count_3)*2;
+    }
+};
 ```
 
-###
+### JZ 按之字形顺序打印二叉树
+
+```c++
+/*
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+    TreeNode(int x) :
+            val(x), left(NULL), right(NULL) {
+    }
+};
+*/
+class Solution {
+public:
+    vector<vector<int> > Print(TreeNode* pRoot) {
+        if(pRoot == nullptr) return {};
+        
+        deque<TreeNode*> deque;
+        deque.push_back(pRoot);
+        bool sw = true;
+        vector<vector<int>> res;
+        
+        while(!deque.empty()){
+            int size = deque.size();
+            vector<int> level;
+            while(size--){
+                if(sw == true){
+                    pRoot = deque.front();
+                    deque.pop_front();
+                    level.push_back(pRoot->val);
+                    if(pRoot->left != nullptr)
+                        deque.push_back(pRoot->left);
+                    if(pRoot->right != nullptr)
+                        deque.push_back(pRoot->right);
+                }
+                else{
+                    pRoot = deque.back();
+                    deque.pop_back();
+                    level.push_back(pRoot->val);
+                    if(pRoot->right != nullptr)
+                        deque.push_front(pRoot->right);
+                    if(pRoot->left != nullptr)
+                        deque.push_front(pRoot->left);
+                }
+            }
+            sw = !sw;
+            res.push_back(level);
+        }
+        return res;
+    }
+};
+```
+
+### JZ 对称的二叉树
+
+```c++
+/*
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+    TreeNode(int x) :
+            val(x), left(NULL), right(NULL) {
+    }
+};
+*/
+class Solution {//迭代解法
+public:
+    bool isSymmetrical(TreeNode* pRoot)
+    {
+        if(pRoot == nullptr) return true;
+        stack<TreeNode*> stack;
+        stack.push(pRoot->left);
+        stack.push(pRoot->right);
+        
+        while(!stack.empty()){
+            TreeNode *right = stack.top();
+            stack.pop();
+            TreeNode *left = stack.top();
+            stack.pop();
+            if(right == nullptr && left == nullptr) continue;
+            if(right == nullptr || left == nullptr) return false;
+            if(right->val != left->val) return false;
+            stack.push(left->left);
+            stack.push(right->right);
+            stack.push(left->right);
+            stack.push(right->left);
+        }
+        return true;
+    }
+
+};
+```
+
+
+
