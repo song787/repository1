@@ -134,6 +134,14 @@ int WSAAPI recvfrom{
 
 
 
+
+
+
+
+
+
+
+
 ## Socket相关技术
 
 ### socket地址解析
@@ -167,7 +175,55 @@ INT WSAAPI getnameinfo(//由套接字来解析主机名；
 );
 ```
 
+### socket 的同步与异步
+
+越是 I/O 密集，越要让内核去处理 I/O 的问题，用户态尽可能不要在 I/O 上进行等待，所以从阻塞 I/O 到 multiplexing 到 edge trigger + non-blocking，都是在减轻用户态代码在 I/O 上等待的时间，而尽可能把时间交给内核。
+
+回答题主问题，epoll 跟 select / poll 一样是 I/O multiplexing，用于在多个 socket 上等待读写事件。人们通常用 epoll 的 edge trigger 搭配 non-blocking
+blocking / non-blocking 的差别在于你尝试读取一定量字符而 socket 暂时没有的时候，是直接返回错误还是会等在 read / recv 操作上。
+
+Socket传输中拿TCP传输为例。假设服务器A 客户机B进行通信传输。首先需要在A机建立监听线程。监听某一端口，那么B机可以向A机发送通讯请求，B机连接到A机以后。A机可以从他的监听队列中取的一个监听对象。在A端拿到了这个Socket对象就可以进行接收跟发送数据了。这里问题就出现了。假如B端在请求A端的时候请求成功就发送一条数据。那么 A端就可以直接拿Socket对象得到他的信息。但是假如B端并没有在连接成功后直接发送信息而是在后来不确定的时间这内发送的信息。那么A端就无法得到这条信息。通常的做法是用一个定时器去不短的扫描这个数据缓存区。看是不是有数据存在这样效率非常低下。那么如何解决这个问题呢。就用到了我们的异步传输。异步传输的原理是。在A端得到这个SOCKET对象以后并不是直接去接收数据而是建立一个回调函数。回调函数是由系统维护的。他在指定的时间自动去扫描数据存储区。假如有数据他就把数据存储到指定的字节数组中。不用用户自己去关心。
+那么同步与异步分别应用于什么情况呢？假如用户的SOCKET连接数据比较短暂的。一次连接直接发送数据的或客户端比较少的就使用同步假如用户的SOCKET属于长时间连接的就使用异步方式。
+
+I/O 密集型进程所执行的 I/O 操作比执行的处理操作更多。CPU 密集型的进程所执行的处理操作比 I/O 操作更多。
+
+> 同步阻塞IO
+
+![image](http://images.cnblogs.com/cnblogs_com/zhuowei/WindowsLiveWriter/synchronousasynchronousblockingnonblocki_A122/image_thumb_1.png)
+
+
+
+> 同步非阻塞IO
+
+![image](http://images.cnblogs.com/cnblogs_com/zhuowei/WindowsLiveWriter/synchronousasynchronousblockingnonblocki_A122/image_thumb_2.png)
+
+> 异步阻塞IO
+
+**配置的是非阻塞** **I/O****，然后使用阻塞** **select** **系统调用来确定一个** **I/O** **描述符何时有操作**。
+
+![image](http://images.cnblogs.com/cnblogs_com/zhuowei/WindowsLiveWriter/synchronousasynchronousblockingnonblocki_A122/image_thumb_3.png)
+
+> 异步非阻塞IO
+
+**读请求会立即返回，说明** **read** **请求已经成功发起了。在后台完成读操作时，应用程序然后会执行其他处理操作。当** **read** **的响应到达时，就会产生一个信号或执行一个基于线程的回调函数来完成这次** **I/O** **处理过程。**
+
+![image](http://images.cnblogs.com/cnblogs_com/zhuowei/WindowsLiveWriter/synchronousasynchronousblockingnonblocki_A122/image_thumb_4.png)
+
+
+
+
+
+
+
 ### 阻塞与非阻塞
+
+
+
+
+
+
+
+
 
 
 

@@ -2098,5 +2098,197 @@ public:
 };
 ```
 
+### JZ 二叉树的下一个结点
+
+```c++
+/*
+struct TreeLinkNode {
+    int val;
+    struct TreeLinkNode *left;
+    struct TreeLinkNode *right;
+    struct TreeLinkNode *next;
+    TreeLinkNode(int x) :val(x), left(NULL), right(NULL), next(NULL) {
+        
+    }
+};
+*/
+class Solution {
+public:
+    TreeLinkNode* GetNext(TreeLinkNode* pNode)
+    {
+        if(pNode == nullptr) return nullptr;
+        if(pNode->right != nullptr){
+            TreeLinkNode* temp = pNode->right;
+            while(temp->left != nullptr)
+                temp = temp->left;
+            return temp ;
+        }
+        else{
+            if(pNode->next != nullptr && pNode->next->left == pNode)
+                return pNode->next;
+            else{
+                while(pNode->next != nullptr && pNode->next->left != pNode)
+                    pNode = pNode->next;
+                return pNode->next;
+            }
+        }
+        return nullptr;
+    }
+};
+```
+
+### JZ 二叉树打印成多行（二叉树的层序遍历）
+
+```c++
+/*
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+    TreeNode(int x) :
+            val(x), left(NULL), right(NULL) {
+    }
+};
+*/
+class Solution {
+public:
+        vector<vector<int> > Print(TreeNode* pRoot) {
+            if(pRoot == nullptr) return {};
+            queue<TreeNode*> queue;
+            queue.push(pRoot);
+            vector<vector<int>> res;
+            while(!queue.empty()){
+                int size = queue.size();
+                vector<int> level;
+                while(size--){
+                    TreeNode* temp = queue.front();
+                    queue.pop();
+                    level.push_back(temp->val);
+                    if(temp->left != nullptr) queue.push(temp->left);
+                    if(temp->right != nullptr) queue.push(temp->right);
+                }
+                res.push_back(level);         
+            }
+            return res;
+        }    
+};
+```
+
+### JZ 序列化二叉树
+
+```c++
+/*
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+    TreeNode(int x) :
+            val(x), left(NULL), right(NULL) {
+    }
+};
+*/
+class Solution {
+public:
+    char* Serialize(TreeNode *root) {  //序列化  
+        
+        queue<TreeNode*> queue;
+        queue.push(root);
+        string str;
+        while(!queue.empty()){
+            int size = queue.size();
+            while(size--){
+                TreeNode* temp = queue.front();
+                queue.pop();
+                if(temp == nullptr){
+                    str += '#';
+                }
+                else{
+                    str += to_string(temp->val) + '!';
+                    queue.push(temp->left);
+                    queue.push(temp->right);
+                }
+            }
+        }
+        char *s = strdup(str.c_str());
+        return s;
+    }
+    TreeNode* Deserialize(char *str) { //解序列化
+        
+        if(*str == '#') return nullptr;
+        int num = getnum(str);
+        TreeNode *root = new TreeNode(num);
+        queue<TreeNode*> queue;
+        queue.push(root);
+        while(!queue.empty()){
+            int size = queue.size();
+            while(size--){
+                TreeNode * temp = queue.front();
+                queue.pop();
+                if(*str == '#') {
+                    temp->left = nullptr;
+                    str++;
+                }
+                else 
+                    temp->left = new TreeNode(getnum(str));
+                if(*str == '#'){
+                    temp->right = nullptr;
+                    str++;
+                }
+                else 
+                    temp->right = new TreeNode(getnum(str));
+                if(temp->left != nullptr) queue.push(temp->left);
+                if(temp->right != nullptr) queue.push(temp->right);                
+            }
+        }
+        return root;        
+    }
+    int getnum(char *&str){ //取值
+        int num = 0;
+        while(*str != '!'){
+            num = num*10 + (*(str++)-'0');
+        }
+        str++;
+        return num;
+    }
+};
+```
+
+### JZ 二叉搜索树的第K个节点
+
+```c++
+/*
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+    TreeNode(int x) :
+            val(x), left(NULL), right(NULL) {
+    }
+};
+*/
+class Solution {//中序遍历，遍历到第K个节点就返回；
+public:
+    TreeNode* KthNode(TreeNode* pRoot, int k)
+    {
+        if(pRoot == nullptr) return nullptr;
+        TreeNode* temp = nullptr;
+        stack<TreeNode*> stack;
+        while(k != 0){
+            while(pRoot != nullptr){
+                stack.push(pRoot);
+                pRoot = pRoot->left;
+            }
+            if(stack.empty()) return nullptr;
+            pRoot = stack.top();
+            stack.pop();
+            k--;
+            temp = pRoot;
+            pRoot = pRoot->right;
+        }
+        return temp;       
+    }    
+};
+```
+
 
 
