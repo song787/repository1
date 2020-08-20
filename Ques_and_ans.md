@@ -1248,6 +1248,20 @@ SHR：除了自身进程的共享内存，也包括其他进程的共享内存�
 
 ### 单例模式
 
+#### 饿汉式
+
+```c++
+class singleton{
+private:
+    static singleton *instence = new singleton();
+    singleton(); 
+public:
+    static singleton *getinstence(){
+        return instence;
+    }
+}
+```
+
 #### 懒汉式
 
 懒加载：实例对象是第一次被调用的时候才真正的构建，而不是程序启动它就构建好了等着来调用，这种滞后构建的方式就叫做懒加载；懒加载的好处在于，有的对象的构建开销是比较大的，假如这个对象在项目启动时就构建，万一从来就没有调用过，那么就比较浪费了，只有真正需要使用了再去构建，这是更加合理的；
@@ -1255,20 +1269,14 @@ SHR：除了自身进程的共享内存，也包括其他进程的共享内存�
 ```c++
 class singleton{
 private: 
-    singleton(){}
-private:
+    singleton();
     static singleton *instence;
-
 public:
     static singleton *getinstence();
 };
-.cpp
+//.cpp
 singleton* singleton::instence = 0;
-singleton::singleton(){
-    std::cout<<"singleton creat success !"<<endl;
-}
 singleton* singleton::getinstence(){
-
     if(instence == NULL){
         instence = new singleton();
     }
@@ -1280,18 +1288,27 @@ singleton* singleton::getinstence(){
 
 ```c++
 class singleton{
-private:
+private: 
     singleton();
-private:
+    ~singleton();
     static singleton *instence;
+    singleton(const singleton &m);
+    singleton& operator=(const singleton &);
+    class a{
+    public:
+        ~a(){
+            if(instence){
+                cout<<"a类的析构函数"<<endl;
+                delete instence;
+            }
+        }
+    };
+    static a aa;
 public:
     static singleton *getinstence();
 };
-.cpp
-singleton::singleton(){
-    cout<<"creat singleton success !" << endl;
-}
-singleton* singleton::instence = 0;
+singleton::a singleton::aa;
+singleton* singleton::instence = NULL;
 singleton* singleton::getinstence(){
     if(instence == NULL){
         lock();
@@ -1301,26 +1318,86 @@ singleton* singleton::getinstence(){
     }
     return instence;
 }
+
+//不一定对
+CRITICAL_SECTION m_sect;
+class Lock{
+    public:
+    Lock(){
+        InitializeCriticalSection(&m_sect);
+        EnterCriticalSection(&m_sect);
+    }
+    ~Lock(){
+        LeaveCriticalSection(&m_sect);
+    }
+};
+class singleton{
+private: 
+    singleton();
+    ~singleton();
+    static singleton *instence;
+    singleton(const singleton &m);
+    singleton& operator=(const singleton &);
+    class a{
+    public:
+        ~a(){
+            if(instence){
+                cout<<"a类的析构函数"<<endl;
+                delete instence;
+            }
+        }
+    };
+    static a aa;
+public:
+    static singleton *getinstence();
+};
+singleton::a singleton::aa;
+singleton* singleton::instence = NULL;
+singleton* singleton::getinstence(){
+
+    if(instence == NULL){
+        Lock lock;
+        if(instence == NULL)
+            instence = new singleton();   
+    }
+    return instence;
+}
 ```
 
 懒汉双锁式，也存在一定的线程不安全问题，主要原因就在于一个指令重排的问题，首先在`instence = new singleton();`这一句中，new的顺序是先申请变量内存，然后初始化，最后将变量给到instence，但是因为指令重排的原因，可能是先执行3再执行2，这就导致thread1再new的3过程时，thread2进入getinstence（），这时候会出现if判断instence已经存在，就直接返回了instence，而这个instence是未初始化的instence，导致线程的不安全；解决方式是将new这个过程原子化；
 
-#### 饿汉式
+#### 局部静态变量式
 
 ```c++
 class singleton{
 private:
-    static singleton *instence = new singleton();
-private:
-    singleton(){
-        
-    }
+    singleton();
+    ~singleton();
+    singleton(const singleton &instance);
+    singleton& operator=(const singleton &instance);
 public:
-    static singleton *getinstence(){
-        return instence;
+    static singleton& getinstance(){
+        static singleton instance;
+        return instance;
     }
 }
+//这种方法又叫做 Meyers' SingletonMeyer's的单例， 是著名的写出《Effective C++》系列书籍的作者 Meyers 提出的。
+//所用到的特性是在C++11标准中的Magic Static特性：如果当变量在初始化的时候，并发同时进入声明语句，并发线程将会阻塞等待初始化结束。
+//这样保证了并发线程在获取静态局部变量的时候一定是初始化过的，所以具有线程安全性。
+//C++11以后,规定了local static在多线程条件下的初始化行为，要求编译器保证了内部静态变量的线程安全性.
+//也就是说local static变量会在编译期初始化,我们可以利用这一特性完成单例.
 ```
+
+**局部静态变量**
+
+> 函数内声明的静态变量为函数内的static对象，在函数第一次被调用时初始化。编译器会保证在进程退出前析构函数会被调用。静态函数实现，则在程序退出时会调用静态函数的析构方法，只要是静态实例，在程序退出后会调用析构函数。
+>
+> 如果是New出来的实例，而没有显式调用析构函数，在程序退出时并不会调用析构函数。因此，如果单例模式以此方式实现，则会产生泄露（像数据库连接、OS内核对像，网络连接等可能不会被正确关闭）；
+
+关于为什么成员属性与成员变量都必须式静态的：
+
+使用类中方法只有两种方式，①创建类的一个对象，用对象去调用方法；②使用类名直接调用类中方法。
+显然第一种情况不能用，只能使用第二种方法。而想要使用类名直接调用类中方法，类中方法必须是静态的，而静态方法不能访问非静态成员变量，因此类自定义的实例变量也必须是静态的。这就是为什么单例模式的唯一实例为什么设置为静态的。
 
 
 

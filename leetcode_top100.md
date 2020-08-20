@@ -105,3 +105,116 @@ public:
 };
 ```
 
+### leetcode 4 寻找两个正序数组的中位数
+
+```c++
+class Solution {
+public:
+    double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+
+        int m = nums1.size();
+        int n = nums2.size();
+        int mid1 = (m+n+1)/2;
+        int mid2 = (m+n+2)/2;
+        return (getKth(nums1,0,m-1,nums2,0,n-1,mid1) + getKth(nums1,0,m-1,nums2,0,n-1,mid2)) * 0.5;
+    }
+    int getKth(vector<int> nums1,int lo1,int hi1,vector<int> nums2,int lo2,int hi2,int k){
+        int lenth1 = hi1 - lo1 + 1;
+        int lenth2 = hi2 - lo2 + 1;
+        if(lenth1 > lenth2) return getKth(nums2,lo2,hi2,nums1,lo1,hi1,k);
+        if(lenth1 == 0) return nums2[lo2 + k - 1];
+        if(k == 1) return min(nums1[lo1],nums2[lo2]);
+        int i = lo1 + min(lenth1,k/2)-1;
+        int j = lo2 + min(lenth2,k/2)-1;
+        
+        if(nums1[i] > nums2[j]){
+            return getKth(nums1,lo1,hi1,nums2,j+1,hi2,k-(j-lo2+1));
+        }
+        else{
+            return getKth(nums1,i+1,hi1,nums2,lo2,hi2,k-(i-lo1+1));
+        }
+    }
+};
+// O(log(m+n));
+```
+
+### leetcode 234 回文链表
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isPalindrome(ListNode* head) {
+        if(head == NULL || head->next == NULL)
+            return true;
+        ListNode* slow = head;
+        ListNode* fast = head;
+        ListNode* p = NULL;
+        ListNode* pre = NULL;
+        while(fast != NULL && fast->next != NULL){
+            p = slow;
+            slow = slow->next;
+            fast = fast->next->next;
+            p->next = pre;
+            pre = p;
+        }
+        if(fast)
+            slow = slow->next;       
+        while(p != NULL){
+            if(p->val != slow->val)
+                return false;
+            p = p->next;
+            slow = slow->next;
+        }
+        return true;
+    }
+};
+```
+
+### leetcode 448 找到所有数组中消失的数字
+
+```c++
+class Solution {
+public:
+    vector<int> findDisappearedNumbers(vector<int>& nums) {
+        for(int i = 0;i < nums.size();++i){
+            nums[abs(nums[i])-1] = -abs(nums[abs(nums[i])-1]);
+        }
+        vector<int> res;
+        for(int i = 0;i < nums.size();++i){
+            if(nums[i] > 0)
+                res.push_back(i+1);
+        }
+        return res;
+    }
+};
+```
+
+### leetcode 461 汉明距离
+
+```c++
+class Solution {
+public:
+    int hammingDistance(int x, int y) {
+
+        int distance = 0;
+        while(x || y){
+            int x_r = x % 2;
+            int y_r = y % 2;
+            if(x_r != y_r)
+                ++distance;
+            x = x >> 1;
+            y = y >> 1;
+        }
+        return distance;
+    }
+};
+```
+
