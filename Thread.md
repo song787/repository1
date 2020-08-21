@@ -93,3 +93,97 @@ int main(){
 }
 ```
 
+```c++
+//
+#include<iostream>
+#include<windows.h>
+
+//1个生产者，2个消费者，4个缓冲区的例子
+CRITICAL_SECTION m_sect;
+HANDLE semaphore_buffEmpty,semaphore_buffFull;
+int produce_num = 24;
+const int buffer_size = 4;
+int buffer[buffer_size];
+int pro_i,con_i;
+bool flag = true;
+
+DWORD WINAPI ProduceThread(LPVOID lpP){
+
+    for(int i = 0;i < produce_num;++i){
+        WaitForSingleObject(semaphore_buffEmpty,INFINITE);
+
+        EnterCriticalSection(&m_sect);
+        buffer[pro_i] = i+1;      
+        std::cout << "生产者向缓冲区（" << pro_i+1 << ")添加产品，产品编号为：" << buffer[pro_i] << std::endl;
+        pro_i = (pro_i + 1) % buffer_size;
+        LeaveCriticalSection(&m_sect);
+
+        ReleaseSemaphore(semaphore_buffFull,1,NULL);
+    }
+    std::cout << "生产者顺利的完成了任务！" << std::endl;
+    return 0;
+}
+DWORD WINAPI ConsummerThread(LPVOID lpP){
+
+    while(true){
+        WaitForSingleObject(semaphore_buffFull,INFINITE);
+
+        EnterCriticalSection(&m_sect);
+        if(flag == true)
+            std::cout << "--->消费者编号为：" << GetCurrentThreadId() << "，消费了产品编号为：" << buffer[con_i] << "的产品！" << std::endl;
+        if(buffer[con_i] == produce_num){
+            if(flag == true)
+                std::cout << "----> 所有产品均已消耗完毕！！" << std::endl;
+            LeaveCriticalSection(&m_sect);
+            ReleaseSemaphore(semaphore_buffFull,1,NULL);
+            flag = false;
+            break;
+        }
+        con_i = (con_i + 1) % buffer_size;
+        
+        LeaveCriticalSection(&m_sect); 
+        Sleep(100);
+        ReleaseSemaphore(semaphore_buffEmpty,1,NULL);
+    }
+    std::cout << "编号为：" << GetCurrentThreadId() << "的线程退出！" << std::endl;
+    return 0;
+}
+
+int main(){
+
+    InitializeCriticalSection(&m_sect);
+    semaphore_buffFull = CreateSemaphore(NULL,0,4,NULL);
+    semaphore_buffEmpty = CreateSemaphore(NULL,4,4,NULL);
+    HANDLE Threads[3];
+    Threads[0] = CreateThread(NULL,0,ProduceThread,NULL,0,NULL);
+    Threads[1] = CreateThread(NULL,0,ConsummerThread,NULL,0,NULL);
+    Threads[2] = CreateThread(NULL,0,ConsummerThread,NULL,0,NULL);
+    pro_i = 0;
+    con_i = 0;
+    memset(buffer,0,sizeof(buffer));
+    WaitForMultipleObjects(3,Threads,true,INFINITE);
+    for(int i = 0;i < 3;++i)
+        CloseHandle(Threads[i]);
+    CloseHandle(semaphore_buffEmpty);
+    CloseHandle(semaphore_buffFull);
+    DeleteCriticalSection(&m_sect);
+    std::cout << "baybay!~~" << std::endl;
+    return 0;
+}
+```
+
+
+
+1．线程（进程）同步的主要任务
+
+答：在引入多线程后，由于线程执行的异步性，会给系统造成混乱，特别是在急用临界资源时，如多个线程急用同一台打印机，会使打印结果交织在一起，难于区分。当多个线程急用共享变量，表格，链表时，可能会导致数据处理出错，因此线程同步的主要任务是使并发执行的各线程之间能够有效的共享资源和相互合作，从而使程序的执行具有可再现性。
+
+2．线程（进程）之间的制约关系？
+
+当线程并发执行时，由于资源共享和线程协作，使用线程之间会存在以下两种制约关系。
+
+（1）．间接相互制约。一个系统中的多个线程必然要共享某种系统资源，如共享CPU，共享I/O设备，所谓间接相互制约即源于这种资源共享，打印机就是最好的例子，线程A在使用打印机时，其它线程都要等待。
+
+（2）．直接相互制约。这种制约主要是因为线程之间的合作，如有线程A将计算结果提供给线程B作进一步处理，那么线程B在线程A将数据送达之前都将处于阻塞状态。
+
+间接相互制约可以称为**互斥**，直接相互制约可以称为**同步**，对于互斥可以这样理解，线程A和线程B互斥访问某个资源则它们之间就会产个顺序问题——要么线程A等待线程B操作完毕，要么线程B等待线程操作完毕，这其实就是线程的同步了。因此**同步包括互斥，互斥其实是一种特殊的同步**。

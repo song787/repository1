@@ -218,3 +218,151 @@ public:
 };
 ```
 
+### leetcode 538 把二叉搜索树转换为累加树
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* convertBST(TreeNode* root) {
+        if(root == NULL) return NULL;
+        stack<TreeNode*> stack;
+        TreeNode* ptr = root;
+        int sum = 0;
+        while(true){
+            while(ptr){
+                stack.push(ptr);
+                ptr = ptr->right;
+            }
+            if(stack.empty()) break;
+            ptr = stack.top();
+            stack.pop();
+            ptr->val = ptr->val + sum;
+            sum = ptr->val;
+            ptr = ptr->left;
+        }
+        return root;
+    }
+};
+```
+
+### leetcode 543 二叉树的直径
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int max_sum = 0;
+    int diameterOfBinaryTree(TreeNode* root) {
+        if(root == NULL) return 0;
+        int dia = deep(root);
+        return max_sum;
+    }
+    int deep(TreeNode* root){
+        int deep_left = 0;
+        int deep_right = 0;
+
+        deep_left = root->left == NULL ? 0 : deep(root->left) + 1;
+        deep_right = root->right == NULL ? 0 : deep(root->right) + 1;
+        max_sum = max(max_sum,deep_left+deep_right);
+        return max(deep_left,deep_right);        
+    }
+};
+```
+
+### leetcode 581 最短连续无序子数组*
+
+```c++
+class Solution {
+public:
+    int findUnsortedSubarray(vector<int>& nums) {
+
+        int size = nums.size();
+        if(size < 1) return 0;
+        int high = 0,low = size-1;
+        int maxval = nums[high],minval = nums[low];
+
+        for(int i = 1;i < size;++i){
+            maxval = max(maxval,nums[i]);
+            minval = min(minval,nums[size-i-1]);
+            if(nums[i] < maxval) high = i;
+            if(nums[size-i-1] > minval) low = size-i-1;
+        }
+        return high > low ? high-low+1 : 0;
+    }
+};
+```
+
+### leetcode 617 合并二叉树
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {//递归
+public:
+    TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2) {
+        if(t1 == NULL) return t2;
+        if(t2 == NULL) return t1;
+        t1->val += t2->val;
+        t1->left = mergeTrees(t1->left,t2->left);
+        t1->right = mergeTrees(t1->right,t2->right);
+        return t1;
+    }
+};
+
+class Solution {//迭代
+public:
+    TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2) {
+        if(t1 == NULL) return t2;
+        if(t2 == NULL) return t1;
+        queue<TreeNode*> que;
+        que.push(t1);
+        que.push(t2);
+
+        while(!que.empty()){
+            TreeNode* node1 = que.front();que.pop();
+            TreeNode* node2 = que.front();que.pop();
+            node1->val += node2->val;
+            if(node1->left != NULL && node2->left != NULL){
+                que.push(node1->left);
+                que.push(node2->left);
+            }
+            if(node1->right != NULL && node2->right != NULL){
+                que.push(node1->right);
+                que.push(node2->right);
+            }
+            if(node1->left == NULL && node2->left != NULL){
+                node1->left = node2->left;
+            }
+            if(node1->right == NULL && node2->right != NULL){
+                node1->right = node2->right;
+            }
+        }
+        return t1;
+    }
+};
+```
+

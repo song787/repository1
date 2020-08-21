@@ -555,6 +555,29 @@ DHCP协议用于动态获取IP地址；具体步骤为：（本部分来自小�
 
 1. 互斥量Mutex：互斥量是内核对象，只有拥有互斥对象的线程才有访问互斥资源的权限。因为互斥对象只有一个，所以可以保证互斥资源不会被多个线程同时访问；当前拥有互斥对象的线程处理完任务后必须将互斥对象交出，以便其他线程访问该资源；互斥对象和临界区对象非常相似，只是其允许在进程间使用，而临界区只限制与同一进程的各个线程之间使用，但是更节省资源，更有效率。
 
+   ```c++
+   HANDLE CreateMutex(
+     LPSECURITY_ATTRIBUTESlpMutexAttributes,//表示安全控制，一般直接传入NULL。
+     BOOLbInitialOwner,//用来确定互斥量的初始拥有者。如果传入TRUE表示互斥量对象内部会记录创建它的线程的线程ID号并将递归计数设置为1，由于该线程ID非零，
+      //所以互斥量处于未触发状态。如果传入FALSE，那么互斥量对象内部的线程ID号将设置为NULL，递归计数设置为0，这意味互斥量不为任何线程占用，处于触发状态。 
+     LPCTSTRlpName//用来设置互斥量的名称，在多个进程中的线程就是通过名称来确保它们访问的是同一个互斥量。
+   );
+   HANDLE OpenMutex(
+    DWORDdwDesiredAccess,//表示访问权限，对互斥量一般传入MUTEX_ALL_ACCESS。
+    BOOLbInheritHandle,//表示互斥量句柄继承性，一般传入TRUE即可。
+    LPCTSTRlpName     //表示名称。某一个进程中的线程创建互斥量后，其它进程中的线程就可以通过这个函数来找到这个互斥量。
+   );//成功返回一个表示互斥量的句柄，失败返回NULL。
+   BOOL ReleaseMutex (HANDLE hMutex)//访问互斥资源前应该要调用等待函数，结束访问时就要调用ReleaseMutex()来表示自己已经结束访问，其它线程可以开始访问了。
+   //由于互斥量是内核对象，因此使用CloseHandle()就可以
+       
+   //mutex用于线程所有权因此必须由得到Mutex所有权的主线程调用ReleaseMutex才行，而Event没有所谓线程所有权因此只需在线程函数里SetEvent（），所以Mutex不能实现同步.
+   //
+   ```
+
+   **未触发其实就是已经有线程独占了,所以其它线程就只能等待;当该线程释放互斥量后,也就是互斥量中的线程ID为0,计数器为0,这时,互斥量处于触发状态,其它线程可以进入,从而拥有该互斥量对象了;**
+
+   mutex的线程相关性导致无法进行线程同步。而event是线程无关的；
+
 2. 信号量Semaphore：
    - 信号量是一个整型变量sem，包含两个原子操作P( )、V( )，也就是对信号量的-1和+1操作；
    - 当一个线程访问临界区，信号量为正，则可以进行P操作，如果信号量等于0，则线程睡眠，等待信号量大于0；如果一个线程完成了对临界区的访问，会对信号量执行V操作，信号量+1，同时会唤醒睡眠的线程；
@@ -562,35 +585,65 @@ DHCP协议用于动态获取IP地址；具体步骤为：（本部分来自小�
    - P操作能够产生阻塞，V操作不会阻塞；
    - 信号量允许同一时刻多个线程访问同一资源，最大线程数量不超过信号量的最大资源计数；
    - 如果信号量的最大资源计数为1，也就是只能取0和1，那么信号量就成了互斥量；
+
+   ```c++
+   HANDLE CreateSemaphore(
+     LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,//表示安全控制，一般直接传入NULL。
+     LONG lInitialCount,//表示初始资源数量。
+     LONG lMaximumCount,//表示最大并发数量。
+     LPCTSTR lpName//表示信号量的名称，传入NULL表示匿名信号量。
+   );
+   HANDLE OpenSemaphore(
+     DWORD dwDesiredAccess,//表示访问权限，对一般传入SEMAPHORE_ALL_ACCESS。
+     BOOL bInheritHandle,//表示信号量句柄继承性，一般传入TRUE即可。
+     LPCTSTR lpName//表示名称，不同进程中的各线程可以通过名称来确保它们访问同一个信号量。
+   );
+   BOOL ReleaseSemaphore(//递增信号量的当前资源计数
+     HANDLE hSemaphore,//信号量的句柄。
+     LONG lReleaseCount,  //表示增加个数，必须大于0且不超过最大资源数量。
+     LPLONG lpPreviousCount //用来传出先前的资源计数，设为NULL表示不需要传出。
+   );
+   //由于信号量是内核对象，因此使用CloseHandle()就可以完成清理与销毁了。
+   ```
+   
+   **当前资源数量大于0，表示信号量处于触发，等于0表示资源已经耗尽故信号量处于末触发。**在对信号量调用等待函数时，等待函数会检查信号量的当前资源计数，如果大于0(即信号量处于触发状态)，减1后返回让调用线程继续执行。一个线程可以多次调用等待函数来减小信号量。 
    
 3. 事件Event（信号）：
    - 允许一个线程在处理完一个任务后，主动唤醒另外一个线程执行任务。事件分为手动重置事件和自动重置事件。手动重置事件被设置为激发状态后，会唤醒所有等待的线程，而且一直保持为激发状态，直到程序重新把它设置为未激发状态。自动重置事件被设置为激发状态后，会唤醒一个等待中的线程，然后自动恢复为未激发状态。
-   
+
    - 事件对象状态：有信号状态、无信号状态；
-   
+
    - 事件对象类型：人工事件(手动设置)、自动事件(自动恢复)；
-   
+
    - 自动事件对象，在被至少一个线程释放后自动返回到无信号状态；
-   
+
    - 人工事件对象，获得信号后，释放可利用线程，但直到调用成员函数ReSet()才将其设置为无信号状态。在创建Cevent对象时，默认创建的是自动事件。
-   
+
    - 使用”事件”机制应注意以下事项：
-   
+
      （1）如果跨进程访问事件，必须对事件命名，在对事件命名的时候，要注意不要与系统命名空间中的其它全局命名对象冲突；
-   
+
      （2）事件是否要自动恢复；
-   
+
      （3）事件的初始状态设置。
-   
+
      ```c++
      HANDLE CreateEvent(
-     LPSECURITY_ATTRIBUTES lpEventAttributes,
-     BOOL bManualReset,
-     BOOL bInitialState,
-     LPCSTR lpName
+     LPSECURITY_ATTRIBUTES lpEventAttributes,//表示安全控制，一般直接传入NULL。
+     BOOL bManualReset,//确定事件是手动置位还是自动置位，传入TRUE表示手动置位，传入FALSE表示自动置位。
+     BOOL bInitialState,//表示事件的初始状态，传入TRUR表示已触发。
+     LPCSTR lpName//表示事件的名称，传入NULL表示匿名事件。
+     );
+     HANDLE OpenEvent(
+      DWORDdwDesiredAccess,//表示访问权限，对事件一般传入EVENT_ALL_ACCESS。
+      BOOLbInheritHandle,//表示事件句柄继承性，一般传入TRUE即可。
+      LPCTSTRlpName     //表示名称，不同进程中的各线程可以通过名称来确保它们访问同一个事件。
      );
      //bManualReset:TRUE，使用ResetEvent()手动重置为无信号状态；FALSE，当一个等待线程被释放时,自动重置状态为无信号状态。
      //bInitialState：指定事件对象的初始状态，当TRUE,初始状态为有信号状态；当FALSE,初始状态为无信号状态。
+     BOOL SetEvent(HANDLEhEvent);//设置事件为触发；（解锁）每次触发后，必有一个或多个处于等待状态下的线程变成可调度状态。
+     BOOL ResetEvent(HANDLEhEvent);//将事件设为末触发（加锁）
+     //由于事件是内核对象，因此使用CloseHandle()就可以完成清理与销毁了。
      
      #include "stdafx.h"
      #include<windows.h>
@@ -630,7 +683,7 @@ DHCP协议用于动态获取IP地址；具体步骤为：（本部分来自小�
            return 0;
        }
      ```
-   
+
 4. 临界区Critical Section：
 
    - 一段对临界资源访问的代码，称为临界区；临界区只允许`同时一个线程`对其访问，如果同时有其他线程试图访问临界区，会被挂起，直到临界区中的线程退出临界区；`临界区是指线程中的一段需要访问共享资源并且当另一个线程处于相应代码区域时便不会被执行的代码区域.`
@@ -638,6 +691,13 @@ DHCP协议用于动态获取IP地址；具体步骤为：（本部分来自小�
    - 临界区在使用时以`CRITICAL_SECTION`结构对象保护共享资源，并分别用`EnterCriticalSection()`和`LeaveCriticalSection()`函数去标识和释放一个临界区。所用到的`CRITICAL_SECTION`结构对象必须经过`InitializeCriticalSection()`的初始化后才能使用，而且必须确保所有线程中的任何试图访问此共享资源的代码都处在此临界区的保护之下。否则临界区将不会起到应有的作用，共享资源依然有被破坏的可能
 
      ```c++
+     //函数
+     void InitializeCriticalSection(LPCRITICAL_SECTIONlpCriticalSection);//临界区的初始化
+     void DeleteCriticalSection(LPCRITICAL_SECTIONlpCriticalSection);//临界区的销毁
+     void EnterCriticalSection(LPCRITICAL_SECTIONlpCriticalSection);//进入临界区
+     void LeaveCriticalSection(LPCRITICAL_SECTIONlpCriticalSection);//离开临界区
+     
+     //
      #include "stdafx.h"
      #include<windows.h>
      #include<iostream>
