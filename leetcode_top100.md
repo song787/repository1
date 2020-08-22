@@ -366,3 +366,77 @@ public:
 };
 ```
 
+### leetcode 5 最长回文子串
+
+```c++
+class Solution {//动态规划法
+public:
+    string longestPalindrome(string s) {
+        int size = s.size();
+        if(size < 2) return s;
+
+        vector<vector<bool>> DP(size+1,vector<bool>(size+1,false));
+        int maxlen = 1;
+        int begin = 0;
+        for(int i = 0;i < size;++i){
+            DP[i][i] = true;
+        }
+
+        for(int j = 1;j < size;++j){
+            for(int i = 0;i < j;++i){
+                if(s[i] != s[j])
+                    DP[i][j] = false;
+                else{
+                    if(j - i < 3)
+                        DP[i][j] = true;
+                    else
+                        DP[i][j] = DP[i+1][j-1];
+                }
+
+                if(DP[i][j] == true && j-i+1 > maxlen){
+                    maxlen = j-i+1;
+                    begin = i;
+                }
+            }
+        }
+        return s.substr(begin,maxlen);
+    }
+};
+
+class Solution {//中心扩散法
+public:
+    string longestPalindrome(string s) {
+        int size = s.size();
+        if(size < 2) return s;
+
+        int maxlen = 1;
+        string res = s.substr(0,1);
+        for(int i = 0;i < size-1;++i){
+
+            string str1 = centertoedge(s,i,i);
+            string str2 = centertoedge(s,i,i+1);
+            string maxsubstr = str1.size() > str2.size() ? str1 : str2;
+            if(maxsubstr.size() > maxlen){
+                res = maxsubstr;
+                maxlen = maxsubstr.size();
+            }
+        }
+        return res;
+    }
+    string centertoedge(string s,int left,int right){
+        int i = left;
+        int j = right;
+        while(i >= 0 && j < s.size()){
+            if(s[i] == s[j]){
+                --i;
+                ++j;
+            }
+            else{
+                break;
+            }
+        }
+        return s.substr(i+1,j-i-1);
+    }
+};
+```
+

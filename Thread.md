@@ -12,6 +12,110 @@
 
 
 
+**关于多进程与多线程：**
+
+进程有独立的地址空间，而同一进程中的线程则需要共享
+开一个进程成本高于线程，优点是隔离度好
+开一个线程的成本较低，但是需要程序员管控的东西也多，相互影响而出问题的机会也较大
+
+对于频繁启动的、大量的执行单元，恐怕只能选择线程（纤程）模型
+
+进程是OS管理的，进程和进程之间本来就是逻辑隔离的，只要OS不出问题，一个进程的错误一般不会影响到其它进程：好处，隔离得好；缺点，成本高，信息资源共享麻烦
+
+线程是在进程中启动的执行单元，共享进程资源，有利于争夺CPU等分时资源，实现并发多任务...好处：性能优越，缺点，程序设计麻烦，这里的概念“线程安全”就是对于所有的资源使用冲突都解决得很好，并不容易的
+
+
+
+
+
+## 进程
+
+我们都知道计算机的核心是CPU，它承担了所有的计算任务；而操作系统是计算机的管理者，它负责任务的调度、资源的分配和管理，统领整个计算机硬件；应用程序侧是具有某种功能的程序，程序是运行于操作系统之上的。
+
+进程是一个具有一定独立功能的程序在一个数据集上的一次动态执行的过程，是操作系统进行资源分配和调度的一个独立单位，是应用程序运行的载体。进程是一种抽象的概念，从来没有统一的标准定义。进程一般由程序、数据集合和进程控制块三部分组成。程序用于描述进程要完成的功能，是控制进程执行的指令集；数据集合是程序在执行时所需要的数据和工作区；程序控制块(Program Control Block，简称PCB)，包含进程的描述信息和控制信息，是进程存在的唯一标志。
+
+进程具有的特征：
+
+动态性：进程是程序的一次执行过程，是临时的，有生命期的，是动态产生，动态消亡的；
+
+并发性：任何进程都可以同其他进程一起并发执行；
+
+独立性：进程是系统进行资源分配和调度的一个独立单位；
+
+结构性：进程由程序、数据和进程控制块三部分组成。
+
+## **1. 多进程并发**
+
+**优点：**
+
+- 将应用程序分为多个、独立的、单纯和的进程，它们运行在同一时刻，就像你可以同时进行网页浏览和文字处理，这些独立的进程可以通过所有常规的进程间通信渠道互相传递信息（信号、套接字、文件、管道等）。
+- 操作系统在进程间提供的附加保护操作和更高级别的通信机制，意味着可以比线程更容易地编写安全的并发代码。
+- 使用独立的进程实现并发，可以在网络连接的不同的机器上运行独立的进程，虽然这增加了通信成本，但在一个精心设计的系统上，这可能是一个提高并行可用行和提高性能的低成本方法。
+
+缺点：
+
+- 这种进程之间的通信通常设置复杂，或是速度较慢，或两者兼备，因为操作系统通常在进程间提供了大量的保护，以避免一个进程不小心修改了属于另一个进程的数据。
+- 运行多个进和所需的固有开销：启动进程需要时间，操作系统必须投入内部资源来管理进程。
+
+## 线程
+
+在早期的操作系统中并没有线程的概念，进程是能拥有资源和独立运行的最小单位，也是程序执行的最小单位。任务调度采用的是时间片轮转的抢占式调度方式，而进程是任务调度的最小单位，每个进程有各自独立的一块内存，使得各个进程之间内存地址相互隔离。
+
+后来，随着计算机的发展，对CPU的要求越来越高，进程之间的切换开销较大，已经无法满足越来越复杂的程序的要求了。于是就发明了线程，线程是程序执行中一个单一的顺序控制流程，是程序执行流的最小单元，是处理器调度和分派的基本单位。一个进程可以有一个或多个线程，各个线程之间共享程序的内存空间(也就是所在进程的内存空间)。一个标准的线程由线程ID、当前指令指针(PC)、寄存器和堆栈组成。而进程由内存空间(代码、数据、进程空间、打开的文件)和一个或多个线程组成。
+
+## **2. 多线程并发**
+
+**优点：**
+
+- 每个线程相互独立运行，且每个线程可以运行不同的指令序列。但进程中的所有的线程都共享相同的地址空间，并且从所有线程中访问大部分数据——全局变量仍然是全局的，指针、对象的引用或数据可以在线程之间传递。
+- 共享的地址空间，以及缺少线程间的数据保护，使得使用多线程相关的开销远小于使用多进程，因为操作系统有更少的簿记要做。
+
+**缺点：**
+
+- 虽然通常可以在进程之间共享内存，但这难以建立并且通常难以管理，因为同一数据的内存地址在不同的进程中也不尽相同。
+- 共享内存的灵活性是有代价的：如果数据要被多个线程访问，那么必须确保当每个线程访问时所看到的数据是一致的。
+
+
+
+1.线程是程序执行的最小单位，而进程是操作系统分配资源的最小单位；
+
+2.一个进程由一个或多个线程组成，线程是一个进程中代码的不同执行路线；
+
+3.进程之间相互独立，但同一进程下的各个线程之间共享程序的内存空间(包括代码段、数据集、堆等)及一些进程级的资源(如打开文件和信号)，某进程内的线程在其它进程不可见；
+
+4.调度和切换：线程上下文切换比进程上下文切换要快得多。
+
+
+
+# 线程优先级
+
+现在主流操作系统(如Windows、Linux、Mac OS X)的任务调度除了具有前面提到的时间片轮转的特点外，还有**优先级调度(Priority Schedule)**的特点。优先级调度决定了线程按照什么顺序轮流执行，在具有优先级调度的系统中，线程拥有各自的线程优先级(Thread Priority)。具有高优先级的线程会更早地执行，而低优先级的线程通常要等没有更高优先级的可执行线程时才会被执行。
+
+线程的优先级可以由用户手动设置，此外系统也会根据不同情形调整优先级。通常情况下，频繁地进入等待状态(进入等待状态会放弃之前仍可占用的时间份额)的线程(如IO线程)，比频繁进行大量计算以至于每次都把所有时间片全部用尽的线程更受操作系统的欢迎。因为频繁进入等待的线程只会占用很少的时间，这样操作系统可以处理更多的任务。我们把频繁等待的线程称之为**IO密集型线程(IO Bound Thread)**，而把很少等待的线程称之为**CPU密集型线程(CPU Bound Thread)**。IO密集型线程总是比CPU密集型线程更容易得到优先级的提升。
+
+## 线程饿死:
+
+在优先级调度下，容易出现一种线程饿死的现象。一个**线程饿死**是说它的优先级较低，在它执行之前总是有比它优先级更高的线程等待执行，因此这个低优先级的线程始终得不到执行。当CPU密集型的线程优先级较高时，其它低优先级的线程就很可能出现饿死的情况；当IO密集型线程优先级较高时，其它线程相对不容易造成饿死的善，因为IO线程有大量的等待时间。为了避免线程饿死，调度系统通常会逐步提升那些等待了很久而得不到执行的线程的优先级。这样，一个线程只要它等待了足够长的时间，其优先级总会被提升到可以让它执行的程度，也就是说这种情况下线程始终会得到执行，只是时间的问题。
+
+在优先级调度环境下，线程优先级的改变有三种方式：
+\1. 用户指定优先级；
+\2. 根据进入等待状态的频繁程度提升或降低优先级(由操作系统完成)；
+\3. 长时间得不到执行而被提升优先级。
+
+所谓**同步(synchronization)**就是指一个线程访问数据时，其它线程不得对同一个数据进行访问，即同一时刻只能有一个线程访问该数据，当这一线程访问结束时其它线程才能对这它进行访问。同步最常见的方式就是使用**锁(Lock)**，也称为线程锁。锁是一种非强制机制，每一个线程在访问数据或资源之前，首先试图**获取(Acquire)锁**，并在访问结束之后**释放(Release)锁**。在锁被占用时试图获取锁，线程会进入等待状态，直到锁被释放再次变为可用。
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -20,11 +124,22 @@
 
 
 
-
-
 线程有自己独立的寄存器，在线程切换的时候会保护现场；
 
+### 多线程编程思路
 
+```c++
+• 主线程生成工作线程
+• 工作线程做具体工作。当工作线程工作完成后，它就自动结束了，也不会产生僵尸进程。
+```
+
+### **多线程相关模块**
+
+```python
+• thread和threading模块允许程序员创建和管理线程 
+• thread模块提供了基本的线程和锁的支持，而threading提供了更高级别、功能更强的线程管理功能
+• 推荐使用更高级别的threading模块
+```
 
 ### 线程函数
 
@@ -55,6 +170,34 @@ DWORD WaitForSingleObject(
 );//函数返回值：在指定的时间内对象被触发，函数返回WAIT_OBJECT_0。超过最长等待时间对象仍未被触发返回WAIT_TIMEOUT。传入参数有错误将返回WAIT_FAILED
 //因为线程的句柄在线程运行时是未触发的，线程结束运行，句柄处于触发状态。所以可以用WaitForSingleObject()来等待一个线程结束运行。
 ```
+
+
+
+#### 读写锁
+
+```c++
+VOID InitializeSRWLock(PSRWLOCK SRWLock);//初始化（没有删除或销毁SRWLOCK的函数，系统会自动清理）
+VOID AcquireSRWLockExclusive(PSRWLOCK SRWLock);//写入者线程申请写资源。
+VOID ReleaseSRWLockExclusive(PSRWLOCK SRWLock);//写入者线程写资源完毕，释放对资源的占用。
+VOID AcquireSRWLockShared(PSRWLOCK SRWLock);//读取者线程申请读资源。
+VOID ReleaseSRWLockShared(PSRWLOCK SRWLock);//读取者线程结束读取资源，释放对资源的占用。
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### 小案例
 
@@ -168,6 +311,167 @@ int main(){
     CloseHandle(semaphore_buffFull);
     DeleteCriticalSection(&m_sect);
     std::cout << "baybay!~~" << std::endl;
+    return 0;
+}
+```
+
+```c++
+//读者-写者问题
+#include<iostream>
+#include<windows.h>
+
+using namespace std;
+
+CRITICAL_SECTION m_sect1,m_sect2;
+HANDLE hEventread,hEventwrite;
+int reader_count;
+const int Readerthreadcount = 5;
+
+DWORD WINAPI thread_write(LPVOID lpP){
+
+    EnterCriticalSection(&m_sect1);
+    cout<<"写者在等待中…………"<<endl;
+    LeaveCriticalSection(&m_sect1);
+    WaitForSingleObject(hEventread,INFINITE);
+
+    ResetEvent(hEventwrite);
+
+    EnterCriticalSection(&m_sect2);
+    cout<<"写者 正在 写 内容 ！" <<endl;
+    Sleep(1000);
+    cout<<"写着已经完成内容的修改！"<<endl;
+    LeaveCriticalSection(&m_sect2);
+    SetEvent(hEventwrite);
+
+    return 0;
+}
+DWORD WINAPI thread_read(LPVOID lpP){
+
+    EnterCriticalSection(&m_sect1);
+    cout<<"编号为："<<GetCurrentThreadId()<<"的读者在等待中……………………"<<endl;
+    LeaveCriticalSection(&m_sect1);
+
+    WaitForSingleObject(hEventwrite,INFINITE);
+
+    EnterCriticalSection(&m_sect2);
+    reader_count++;
+    if(reader_count == 1){
+        ResetEvent(hEventread);
+    }
+    cout<<"读者编号为："<<GetCurrentThreadId()<<"的读者正在读内容中！！！"<<endl;
+    Sleep(666 );
+    cout<<"读者编号为："<<GetCurrentThreadId()<<"的读者 -退出- "<<endl;
+    reader_count--;
+    if(reader_count == 0){
+        SetEvent(hEventread);
+    }
+    LeaveCriticalSection(&m_sect2);
+    return 0;
+}
+
+int main(){
+
+    reader_count = 0;
+    InitializeCriticalSection(&m_sect2);
+    InitializeCriticalSection(&m_sect1);
+
+    hEventread = CreateEvent(NULL,false,true,NULL);
+    hEventwrite = CreateEvent(NULL,true,true,NULL);
+
+    HANDLE hThread[Readerthreadcount+1];
+    int i = 0;
+    for(i = 0;i < 2;i++){
+        hThread[i] = CreateThread(NULL,0,thread_read,NULL,0,NULL);
+    }
+
+    hThread[2] = CreateThread(NULL,0,thread_write,NULL,0,NULL);
+    Sleep(200);
+    for(;i <= Readerthreadcount;++i){
+        hThread[i] = CreateThread(NULL,0,thread_read,NULL,0,NULL);
+    }
+    WaitForMultipleObjects(Readerthreadcount+1,hThread,true,INFINITE);
+
+    for(int i = 0;i <= Readerthreadcount;++i){
+        CloseHandle(hThread[i]);
+    }
+    CloseHandle(hEventwrite);
+    CloseHandle(hEventread);
+    DeleteCriticalSection(&m_sect1);
+    DeleteCriticalSection(&m_sect2);
+    return 0;
+}
+```
+
+```c++
+//双线程读写队列数据
+#include<iostream>
+#include<windows.h>
+
+using namespace std;
+
+CRITICAL_SECTION m_sect;
+HANDLE hSemaphoreFull,hSemaphoreEmpty;
+int g_count_w,g_count_r;
+const int buffer_size = 5;
+int buffer[buffer_size];
+
+DWORD WINAPI thread_write(LPVOID lpP){
+
+    int i = 0;
+    while(i < 20){
+
+        WaitForSingleObject(hSemaphoreEmpty,INFINITE);
+        
+        buffer[g_count_w] = ++i;
+        EnterCriticalSection(&m_sect);
+        cout<<"写入数据："<<buffer[g_count_w]<<endl;
+        LeaveCriticalSection(&m_sect);
+        Sleep(200);
+        
+        g_count_w = (g_count_w + 1) % buffer_size;
+        
+        ReleaseSemaphore(hSemaphoreFull,1,NULL);
+    }       
+    return 0;
+}
+DWORD WINAPI thread_read(LPVOID lpP){
+
+    int data = 0;
+    while(data < 20){
+        WaitForSingleObject(hSemaphoreFull,INFINITE);
+        
+        data = buffer[g_count_r];
+        g_count_r = (g_count_r + 1) % buffer_size;
+        EnterCriticalSection(&m_sect);
+        cout<<"读取数据->"<<data<<endl;
+        LeaveCriticalSection(&m_sect);
+        Sleep(200);
+        
+        ReleaseSemaphore(hSemaphoreEmpty,1,NULL);
+    }
+    return 0;
+}
+
+int main(){
+
+    g_count_w = 0;
+    g_count_r = 0;
+    InitializeCriticalSection(&m_sect);  
+    hSemaphoreEmpty = CreateSemaphore(NULL,buffer_size,buffer_size,NULL);
+    hSemaphoreFull = CreateSemaphore(NULL,0,buffer_size,NULL);
+
+    HANDLE hThread[2];
+    hThread[0] = CreateThread(NULL,0,thread_write,NULL,0,NULL);
+    hThread[1] = CreateThread(NULL,0,thread_read,NULL,0,NULL);
+
+    WaitForMultipleObjects(2,hThread,true,INFINITE);
+
+    CloseHandle(hSemaphoreFull);
+    CloseHandle(hSemaphoreEmpty);
+    for(int i = 0;i < 2;i++){
+        CloseHandle(hThread[i]);
+    }
+    DeleteCriticalSection(&m_sect);
     return 0;
 }
 ```
