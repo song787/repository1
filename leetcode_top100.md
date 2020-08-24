@@ -440,3 +440,136 @@ public:
 };
 ```
 
+### leetcode 11 盛最多水的容器
+
+```c++
+class Solution {
+public:
+    int maxArea(vector<int>& height) {
+        /*
+        //暴力-timeout
+        int area_value = 0;
+        int area_maxvalue = 0;
+        int size = height.size();
+        for(int i = 0;i < size;++i)
+            for(int j = i+1;j < size;++j){
+                area_value = (j - i) * min(height[i],height[j]);
+                area_maxvalue = max(area_maxvalue,area_value);
+            }
+        return area_maxvalue;
+        */
+        //滑动窗口
+        int i = 0,j = height.size()-1;
+        int res = 0;
+        while(i < j){
+            res = max(res,min(height[i],height[j])*(j-i));
+            if(height[i] < height[j])++i;
+            else --j;
+        }
+        return res;
+    }
+};
+```
+
+### leetcode 10 正则表达式匹配**(budong)
+
+```c++
+class Solution {//答案
+public:
+    bool isMatch(string s, string p) {
+        s=" "+s;//防止该案例：""\n"c*"
+        p=" "+p;
+        int m=s.size(),n=p.size();
+        bool dp[m+1][n+1];
+        memset(dp,false,(m+1)*(n+1));
+        dp[0][0]=true;
+        for(int i=1;i<=m;i++){
+            for(int j=1;j<=n;j++){
+                if(s[i-1]==p[j-1] || p[j-1]=='.'){
+                    dp[i][j]=dp[i-1][j-1];
+                }
+                else if(p[j-1]=='*'){
+                    if(s[i-1]!=p[j-2] && p[j-2]!='.')
+                        dp[i][j]=dp[i][j-2];
+                    else{
+                        dp[i][j]=dp[i][j-1] || dp[i][j-2] || dp[i-1][j];
+
+                    }
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+
+### leetcode 19 删除链表的倒数第N个节点
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        ListNode* ptr = new ListNode(0);
+        ptr->next = head;
+        ListNode* left = ptr;
+        ListNode* right = ptr;
+        for(int i = 0;i <= n;++i){
+            right = right->next;
+        }
+        while(right != NULL){
+            left = left->next;
+            right = right->next;
+        }
+        left->next = left->next->next;
+        return ptr->next;
+    }
+};
+```
+
+### leetcode 15 三数之和
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        if(nums.empty()) return {};
+        int size = nums.size();
+        sort(nums.begin(),nums.end());
+        vector<vector<int>> res;
+        for(int i = 0;i < size-2 && nums[i] <= 0;++i){
+            if(i > 0 && nums[i] == nums[i-1]) continue;        
+            int k = i+1;
+            int j = size-1;
+            while(k < j){
+                int sum = nums[i] + nums[k] + nums[j];
+                if(sum == 0){
+                    vector<int> level;
+                    level.push_back(nums[i]);
+                    level.push_back(nums[k]);
+                    level.push_back(nums[j]);
+                    res.push_back(level);
+                    while(k < j && nums[k] == nums[k+1]) ++k;
+                    while(k < j && nums[j] == nums[j-1]) --j;
+                    ++k;
+                    --j;
+                }
+                else if(sum < 0){
+                    ++k;
+                }
+                else if(sum > 0)
+                    --j;
+            }
+        }
+        return res;
+    }
+};
+```
+
