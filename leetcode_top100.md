@@ -573,3 +573,144 @@ public:
 };
 ```
 
+### leetcode101 对称二叉树
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isSymmetric(TreeNode* root) {
+        if(root == NULL) return true;
+        queue<TreeNode*> que;
+        que.push(root);
+        que.push(root);
+        while(!que.empty()){
+            TreeNode* left = que.front();
+            que.pop();
+            TreeNode* right = que.front();
+            que.pop();
+
+            if(left == NULL && right == NULL) continue;
+            if(left == NULL || right == NULL || left->val != right->val)
+                return false;
+            que.push(left->left);
+            que.push(right->right);
+
+            que.push(left->right);
+            que.push(right->left);
+        }
+        return true;
+    }
+};
+
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isSymmetric(TreeNode* root) {
+        return isMirror(root,root);
+    }
+    bool isMirror(TreeNode* left,TreeNode* right){
+        if(left == NULL && right == NULL) return true;
+        if(left == NULL || right == NULL || right->val != left->val)
+            return false;
+        return isMirror(left->left,right->right) && isMirror(left->right , right->left);
+    }
+};
+```
+
+### leetcode 102 二叉树的层序遍历
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        if(root == NULL) return {};
+        queue<TreeNode*> que;
+        que.push(root);
+        vector<vector<int>> res;
+
+        while(!que.empty()){
+            int size = que.size();
+            vector<int> level;
+            while(size--){
+                TreeNode* node = que.front();
+                que.pop();
+                level.push_back(node->val);
+
+                if(node->left != NULL)
+                    que.push(node->left);
+                if(node->right != NULL)
+                    que.push(node->right);   
+            }
+            res.push_back(level);
+        }
+        return res;
+    }
+};
+```
+
+### leetcode 200 岛屿的数量
+
+```c++
+class Solution {
+public:
+    vector<pair<int,int>> dir = {{-1,0},{1,0},{0,-1},{0,1}};
+    int numIslands(vector<vector<char>>& grid) {
+        if(grid.empty()) return 0;
+        int m = grid.size();
+        int n = grid[0].size();
+        if(m == 0 || n == 0) return 0;
+        queue<pair<int,int>> que;
+        int value = 0;
+        for(int i = 0;i < m;++i)
+            for(int j = 0;j < n;++j){
+                bool flag = false;
+                que.push(make_pair(i,j));
+                while(!que.empty()){
+                    int x = que.front().first;
+                    int y = que.front().second;
+                    que.pop();
+                    if(grid[x][y] == '0')
+                        continue;
+                    grid[x][y] = '0';
+                    flag = true;
+                    for(int i = 0;i < 4;++i){
+                        int next_x = x + dir[i].first;
+                        int next_y = y + dir[i].second;
+                        if(next_x < 0 || next_x >= m || next_y < 0 || next_y >= n)
+                            continue;
+                        que.push(make_pair(next_x,next_y));
+                    }
+                }
+                value += flag;
+            }
+            return value;
+    }
+};
+```
+
