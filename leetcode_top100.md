@@ -714,3 +714,172 @@ public:
 };
 ```
 
+### leetcode 104 二叉树的最大深度
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int maxDepth(TreeNode* root) {
+        if(root == NULL) return 0;
+        stack<pair<TreeNode*,int>> stack;
+        TreeNode* p = root;
+        int maxdeep = 0;
+        int deep = 0;
+        while(!stack.empty() || p != NULL){
+
+            while(p){
+                stack.push(make_pair(p,++deep));
+                p = p->left;
+            }
+            p = stack.top().first;
+            deep = stack.top().second;
+            if(maxdeep < deep) maxdeep = deep;
+            p = p->right;
+            stack.pop();
+        }
+        return maxdeep;
+    }
+};
+```
+
+### leetcode 98 验证二叉搜索树
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isValidBST(TreeNode* root) {
+       if(root == NULL) return true;
+       stack<TreeNode*> stack;
+        TreeNode* p = root;
+        int value = INT_MIN;
+        bool flag = true;
+       while(!stack.empty() || p != NULL){
+           while(p){
+               stack.push(p);
+               p = p->left;
+           }
+            p = stack.top();
+            if(!flag && p->val <= value) return false;
+            value = p->val;
+            flag = false;
+            stack.pop();
+            p = p->right;
+       }
+       return true;
+    }
+};
+//递归
+class Solution {
+public:
+    bool isValidBST(TreeNode* root) {
+        return helper(root,LONG_MIN,LONG_MAX);
+    }
+    bool helper(TreeNode* root,long long loval,long long hival){
+        if(root == NULL) return true;
+        if(root->val >= hival || root->val <= loval) return false;
+        return helper(root->left,loval,root->val) && helper(root->right,root->val,hival);
+    }
+};
+```
+
+### LEETCODE 105 从前序遍历与中序遍历构造二叉树
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {//递归
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        return rebuildTree(preorder,0,preorder.size(),inorder,0,inorder.size());
+    }
+    TreeNode* rebuildTree(vector<int> &preorder,int start_pre,int end_pre,vector<int> &inorder,int start_in,int end_in){
+        if(start_pre >= end_pre || start_in >= end_in) return NULL;
+        TreeNode* root = new TreeNode(preorder[start_pre]);
+        for(int i = start_in;i < end_in;++i){
+            if(root->val == inorder[i]){
+                root->left = rebuildTree(preorder,start_pre+1,start_pre+1+i-start_in,inorder,start_in,i);
+                root->right = rebuildTree(preorder,start_pre+1+i-start_in,end_pre,inorder,i+1,end_in);
+                break;
+            }
+        }
+        return root;
+    }
+};
+
+
+```
+
+### leetcode 114 二叉树展开为列表
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    void flatten(TreeNode* root) {
+        TreeNode* cur = root;
+        while(cur != nullptr){
+            if(cur->left == nullptr)
+                cur = cur->right;
+            else{
+                TreeNode* leftnode = cur->left;
+                if(leftnode->right != nullptr)
+                    while(leftnode->right)
+                        leftnode = leftnode->right;
+                leftnode->right = cur->right;
+                cur->right = cur->left;
+                cur->left = nullptr;
+                cur = cur->right;
+            }
+        }
+    }
+};
+//递归
+class Solution {
+public:
+    void flatten(TreeNode* root) {
+        if(root == nullptr) return ;
+        flatten(root->right);
+        flatten(root->left);
+        root->right = pre;
+        root->left = nullptr;
+        pre = root;
+    }
+    TreeNode* pre = nullptr;
+};
+```
+

@@ -2334,10 +2334,51 @@ public:
 };
 ```
 
-二叉树的Z型遍历；
+#### 二叉树的Z型遍历；
 
 ```c++
-//
+//Z型遍历
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {//BFS+deque  法二：层序遍历，奇数reverse偶数不反转；
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        if(root == NULL) return {};
+        vector<vector<int>> res;
+        deque<TreeNode*> deque;
+        deque.push_back(root);
+        bool sw = true;
+        while(!deque.empty()){
+            int size = deque.size();
+            vector<int> level;
+            while(size--)
+                if(sw == true){
+                    root = deque.front();
+                    deque.pop_front();
+                    level.push_back(root->val);
+                    if(root->left != NULL) deque.push_back(root->left);
+                    if(root->right != NULL) deque.push_back(root->right);
+                }
+                else{
+                    root = deque.back();
+                    deque.pop_back();
+                    level.push_back(root->val);
+                    if(root->right != NULL) deque.push_front(root->right);
+                    if(root->left != NULL) deque.push_front(root->left);
+                }
+            res.push_back(level);
+            sw = !sw;
+        }
+        return res;        
+    }
+};
 ```
 
 #### 二叉树的层序遍历
@@ -2412,48 +2453,7 @@ public:
     }
 };
 
-//Z型遍历
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
- * };
- */
-class Solution {//BFS+deque  法二：层序遍历，奇数reverse偶数不反转；
-public:
-    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
-        if(root == NULL) return {};
-        vector<vector<int>> res;
-        deque<TreeNode*> deque;
-        deque.push_back(root);
-        bool sw = true;
-        while(!deque.empty()){
-            int size = deque.size();
-            vector<int> level;
-            while(size--)
-                if(sw == true){
-                    root = deque.front();
-                    deque.pop_front();
-                    level.push_back(root->val);
-                    if(root->left != NULL) deque.push_back(root->left);
-                    if(root->right != NULL) deque.push_back(root->right);
-                }
-                else{
-                    root = deque.back();
-                    deque.pop_back();
-                    level.push_back(root->val);
-                    if(root->right != NULL) deque.push_front(root->right);
-                    if(root->left != NULL) deque.push_front(root->left);
-                }
-            res.push_back(level);
-            sw = !sw;
-        }
-        return res;        
-    }
-};
+
 ```
 
 
@@ -2534,9 +2534,13 @@ int main(){
 }
 ```
 
-
-
 手写大小端转换函数 
+
+
+
+
+
+
 
 手写socket断点续传文件
 
@@ -2549,8 +2553,6 @@ int main(){
 DFS、BFS
 
 整数转化成字符串；
-
-层次遍历二叉树的过程；
 
 迭代二叉树的深度；
 

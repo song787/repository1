@@ -15,6 +15,55 @@ void convert(_int64 n, int base){
     while(!_stack.empty())
         printf("%c",_stack.pop());
 }
+//----------------------------------------
+#include<iostream>
+#include<math.h>
+#include<string>
+#include<stack>
+using namespace std;
+int funcNto10(string &str,int base){
+    int size = str.size();
+    int sum = 0;
+    for(int i = 0;i < size;++i){
+        if(str[i] >= '0' && str[i] <= '9'){
+            int temp = str[i]-'0';
+            sum += temp*pow(base,size-i-1);
+        }
+        else if(str[i] >= 'A' && str[i] <= 'Z'){
+            int temp = str[i]-'A'+10;
+            sum += temp*pow(base,size-i-1);
+        }
+    }
+    return sum;
+}
+string func10toN(int num,int base){
+    string str;
+    stack<char> stack;
+    char ch;
+    while(num != 0){
+        int temp = num % base;
+        if(temp > 9)
+            ch = 'A'+temp-10;
+        else
+            ch = '0'+temp;
+        stack.push(ch);
+        num /= base;
+    }
+    while(!stack.empty()){
+        str += stack.top();
+        stack.pop();
+    }
+    return str;
+}
+int main(){
+    string str = "2B";
+    int res = funcNto10(str,16);
+    cout<<res<<endl;
+    int num = 43;
+    string rest= func10toN(num,8);
+    cout<<rest<<endl;
+    return 0;
+}
 ```
 
 ### 2. 用栈实现 括号匹配算法
@@ -72,29 +121,44 @@ void travPre_R (Binnode<T>* t, VST& visit){
     travPre_R(t -> right, visit);
 }
 //迭代版本
-template<typename T, typename VST>
-void travPre_I1 (Binnode<T>* t, VST& visit){
-    stack<Binnode<T>*> s;
-    if(t) s.push(t);
-    while(!s.empty()){
-        Binnode<T>* temp = s.pop();
-        if(temp->right != NULL)
-            s.push(temp->right);
-        if(temp->left != NULL)
-            s.push(temp->left);
+struct TreeNode{
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x):val(x),left(NULL),right(NULL) {}
+};
+void travPre(TreeNode *root){
+    stack<TreeNode*> stack;
+    if(root) stack.push(root);
+    while(!stack.empty()){
+        root = stack.top();
+        stack.pop();
+        visit(root->data);
+        if(root->right) stack.push(root->right);
+        if(root->left) stack.push(root->left);
     }
 }
 //迭代版本2
-template<typename T, typename VST>
-void travPre_I2(Binnode<T>* t, VST& visit){
-    stack<Binnode<T>*> s;
+struct TreeNode{
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x):val(x),left(NULL),right(NULL) {}
+};
+vector<int> travPre2(TreeNode *root){
+    vector<int> res;
+    stack<TreeNode*> stack;
     while(true){
-        visit(t->data);
-        s.push(t->right);
-        t = t->left;
+        while(root){
+            res.push_back(root->val);
+            stack.push(root->right);
+            root = root->left;
+        }
+        if(stack.empty()) break;
+        root = stack.top();
+        stack.pop();
     }
-    if(s.empty()) break;
-    t = s.pop();
+    return res;
 }
 ```
 
@@ -121,27 +185,27 @@ void travIn_R(Binnode<T>* t, VST& visit){
     travIN_R(t->right,visit);
 }
 //中序遍历 迭代版
-template<typename T,typename VST>
-void travIn_I1(Binnode<T>* t,VST& visit){
-    stack<Binnode<T>*> s;
-    if(!t) return;
-    while(true){
-        while(t){
-            s.push(t);
-            t = t->left;            
+struct TreeNode{
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x) : val(x),left(NULL),right(NULL) {}
+};
+vector<int> travIn(TreeNode *root){
+    vector<int> res;
+    stack<TreeNode*> stack;
+    while(root || !stack.empty()){
+        while(root){
+            stack.push(root);
+            root = root->left;
         }
-        if(s.empty()) break;
-        Binnode<T>* t = s.pop();
-        visit(t->data);
-        t = t->right;
+        root = stack.top();
+        stack.pop();
+        res.push_back(root->val);
+        root = root->right;
     }
+    return res; 
 }
-//中序遍历 迭代版2-无需辅助栈
-template<typename T,typename VST>
-void travIn_I1(Binnode<T>* t,VST& visit){   
-    
-}       
-    
 ```
 
 ### 6. 二叉树后序遍历
@@ -166,38 +230,13 @@ void travPos_R(Binnode<T>* t,VST& visit){
     travPos_R(t->right,visit);
     visit(t->data);
 }
-//后序遍历 迭代版(课件)
-template<typename T,typename VST>
-void travPos_R(Binnode<T>* t,VST& visit){
-    stack<Binnode<T>*> s;   //辅助栈
-    if(t) s,push(t);	    //根节点入栈
-    while(!s.empty()){			
-        if(s.top() != t->parent){ //若栈顶非当前节点之父（则必为其右兄），此时需在以其右兄为根之子树中，找到HLVFL（相当于递归深入其中）
-            while(Binnode<T>* x = s.top()){ //在以S栈顶节点为根的子树中，找到最高左侧可见叶节点，沿途所遇节点依次入栈，自顶而下，反复检查当前节点
-                if(x->left != NULL){//尽可能向左
-                    if(x->right != NULL)//若有右孩子，优先入栈
-                        s.push(x->right);
-                    s.push(x->left)//然后才转至左孩子
-                }
-                else{//实不得已才向右
-                    s.push(x->right);
-                }
-            }
-            s.pop();//返回之前，弹出栈顶的空节点
-        }
-        t = s.pop();//弹出栈顶（即前一节点之后继），并访问之
-        visit(t->data);            
-    }
 //后序遍历 迭代版（leetcode）
-    /**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
- * };
- */
+ struct TreeNode {
+     int val;
+     TreeNode *left;
+     TreeNode *right;
+     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ };
 class Solution {
 public:
     vector<int> postorderTraversal(TreeNode* root) {
@@ -205,7 +244,6 @@ public:
         stack<TreeNode*> s;
         set<TreeNode*> myset;
         if(root) s.push(root);
-
         while(!s.empty()){
             root = s.top();
             bool leftVisited = true, rightVisited = true;
@@ -262,7 +300,6 @@ void BFS(int v, int& clock){
         status(v) = visited;//当前顶点访问完毕
     }
 }
-
 //leetcode刷题中的写法
 
 ```
@@ -272,30 +309,6 @@ void BFS(int v, int& clock){
 ```c++
 /*
 访问顶点s，若s尚有未被访问的邻居，任取其一u，递归执行DFS(u)。直到没有子节点为止，就返回上一级节点，查看是否有其他未访问节点，如果没有就继续返回更上一级，如果有就执行DFS算法；
-*/
-0009 template <typename Tv, typename Te> //深度优先搜索DFS算法（全图）
-0010 void Graph<Tv, Te>::dfs ( int s ) { //assert: 0 <= s < n
-0011    reset(); int clock = 0; int v = s; //初始化
-0012    do //逐一检查所有顶点
-0013       if ( UNDISCOVERED == status ( v ) ) //一旦遇到尚未发现的顶点
-0014          DFS ( v, clock ); //即从该顶点出发启动一次DFS
-0015    while ( s != ( v = ( ++v % n ) ) ); //按序号检查，故不漏不重
-0016 }
-0017 
-0018 template <typename Tv, typename Te> //深度优先搜索DFS算法（单个连通域）
-0019 void Graph<Tv, Te>::DFS ( int v, int& clock ) { //assert: 0 <= v < n
-0020    dTime ( v ) = ++clock; status ( v ) = DISCOVERED; //发现当前顶点v
-0021    for ( int u = firstNbr ( v ); -1 < u; u = nextNbr ( v, u ) ) //枚举v的所有邻居u
-0022       switch ( status ( u ) ) { //并视其状态分别处理
-0023          case UNDISCOVERED: //u尚未发现，意味着支撑树可在此拓展
-0024             type ( v, u ) = TREE; parent ( u ) = v; DFS ( u, clock ); break;
-0025          case DISCOVERED: //u已被发现但尚未访问完毕，应属被后代指向的祖先
-0026             type ( v, u ) = BACKWARD; break;
-0027          default: //u已访问完毕（VISITED，有向图），则视承袭关系分为前向边或跨边
-0028             type ( v, u ) = ( dTime ( v ) < dTime ( u ) ) ? FORWARD : CROSS; break;
-0029       }
-0030    status ( v ) = VISITED; fTime ( v ) = ++clock; //至此，当前顶点v方告访问完毕
-0031 }
 
 //leetcode刷题写法
 
