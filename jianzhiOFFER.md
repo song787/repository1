@@ -850,7 +850,31 @@ public:
     }
 };
 
-//遇到空格就把空格后面的字符串整体后移两位，然后将空格处修改为%20；
+//遇到空格就把空格后面的字符串整体后移两位，然后将空格处修改为%20； 
+
+class Solution {
+public:
+	void replaceSpace(char *str,int length) {
+        int spacenum = 0;
+        for(int i = 0;i < length;++i){
+            if(str[i] == ' ')
+                ++spacenum;
+        }
+        int newlength = length + 2*spacenum;
+        int indexold = length-1;
+        int indexnew = newlength-1;
+        for(;indexold >= 0 && indexnew >= 0;indexold--){
+            if(str[indexold] == ' '){
+                str[indexnew--] = '0';
+                str[indexnew--] = '2';
+                str[indexnew--] = '%';
+            }
+            else{
+                str[indexnew--] = str[indexold];
+            }
+        }   
+	}
+};
 ```
 
 ### JZ43 左旋转字符串
