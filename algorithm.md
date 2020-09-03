@@ -362,27 +362,6 @@ public:
             hi = last;
         }
     } 
-    
-//归并排序
-    void mergeSort(vector<int>& nums, int lo, int hi){
-        if(hi-lo < 2) return ;
-        int mid = lo + (hi-lo)/2;
-        mergeSort(nums,lo,mid);
-        mergeSort(nums,mid,hi);
-        merge(nums,lo,mid,hi);
-    }
-    void merge(vector<int>& nums,int lo,int mid,int hi){
-        vector<int> temp_nums;
-        for(int i = lo;i < mid;i++)
-            temp_nums.push_back(nums[i]);
-        for(int i = lo,j = 0,k = mid;(j < mid) || (k < hi);){
-            if((j < mid) && (k >= hi || (temp_nums[j] <= nums[k])))
-                nums[i++] = temp_nums[j++];
-            if((k < hi) && (j >= mid || (nums[k] < temp_nums[j])))\
-                nums[i++] = nums[k++];
-        }        
-    }
-    
     //选择排序
     void selectSort(vector<int>& nums){
         int size = nums.size();
@@ -394,7 +373,7 @@ public:
             if(index_max != size-i-1)
                 swap(nums[index_max],nums[size-i-1]);
         }
-    }
+    }   
     
     //插入排序
     void insertSort(vector<int>& nums){
@@ -409,7 +388,26 @@ public:
             nums[j+1] = key;
         }
     }
-    
+//归并排序
+    void mergeSort(vector<int>& nums, int lo, int hi){
+        if(hi-lo < 2) return ;
+        int mid = lo + (hi-lo)/2;
+        mergeSort(nums,lo,mid);
+        mergeSort(nums,mid,hi);
+        merge(nums,lo,mid,hi);
+    }
+    void merge(vector<int>& nums,int lo,int mid,int hi){
+        int size = mid - lo;
+        vector<int> temp_nums;
+        for(int i = lo;i < mid;i++)
+            temp_nums.push_back(nums[i]);
+        for(int i = lo,j = 0,k = mid;(j < size) || (k < hi);){
+            if((j < size) && (k >= hi || (temp_nums[j] <= nums[k])))
+                nums[i++] = temp_nums[j++];
+            if((k < hi) && (j >= size || (nums[k] < temp_nums[j])))
+                nums[i++] = nums[k++];
+        }        
+    }
     //堆排序
     void heapSort(vector<int>& nums){
 		priority_queue<int,vector<int>,cmp> pq;
@@ -428,8 +426,7 @@ public:
             //return p1 < p2;//大顶堆
             return p1 > p2;//小顶堆
         }
-    };
-    
+    }; 
     //快速排序
     void quickSort(vector<int>& nums, int lo, int hi){
         if(hi - lo < 2) return ;
