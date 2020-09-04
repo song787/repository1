@@ -144,6 +144,15 @@
 6. TCP首部开销（20字节）比UDP首部开销（8字节）要大；
 7. UDP 的主机不需要维持复杂的连接状态表；
 
+数据包的大小：
+
+局域网的链路层传输数据的最大长度是`1518bit`，包括帧的头尾部长度`18bit`（头`14`+尾`4`），IP头部长度为`20bit`，TCP头尾部长度为`20bit`，UDP头尾部长度为`8bit`。所以TCP在局域网中传输数据的最长长度=1518-18-20-20 = `1460bit`，UDP传输数据的最长长度 = 1518 - 18 -20 - 8 = `1472bit`
+
+理论中传输数据的最长长度:
+
+1. TCP是以数据流形式传输数据，所以使用send函数理论上没有大小限制。一般数据包太长的话会进行多次拆包传输，数据包短的话会放到下一次数据传输时发送。
+2. internet用UDP协议发送时，用sendto函数最大能发送数据的长度为：**65535**- IP头(20) - UDP头(8)＝65507字节。用sendto函数发送数据时，如果发送数据长度大于该值，则函数会返回错误
+
 #### TCP为什么可靠
 
 1. 数据包校验：目的是检测数据在传输过程中的任何变化，若校验出包有错，则丢弃报文段并且不给出响应，这时TCP发送数据端超时后会重发数据；
@@ -424,6 +433,28 @@ DHCP协议用于动态获取IP地址；具体步骤为：（本部分来自小�
 - 限制同时打开SYN半链接的数目
 - 缩短SYN半链接的Time out 时间
 - 关闭不必要的服务
+
+
+
+#### TTL、RTT、MTU
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ------
 
@@ -762,9 +793,17 @@ DHCP协议用于动态获取IP地址；具体步骤为：（本部分来自小�
 7. 多级反馈队列调度算法MFQ
    - 一个进程需要执行 100 个时间片，如果采用时间片轮转调度算法，那么需要交换 100 次。多级队列是为这种需要连续执行多个时间片的进程考虑，它设置了多个队列，每个队列时间片大小都不同，例如 1,2,4,8,..。进程在第一个队列没执行完，就会被移到下一个队列。这种方式下，之前的进程只需要交换 7 次。每个队列优先权也不同，最上面的优先权最高。因此只有上一个队列没有进程在排队，才能调度当前队列上的进程。可以将这种调度算法看成是时间片轮转调度算法和优先级调度算法的结合。
 
-#### 基于优先级调度的方法存在什么问题
+> 基于优先级调度的方法存在什么问题
 
 优先级调度可能会产生饥饿的问题，解决方法是偶尔提升一下优先级
+
+> 既然多优先级队列+时间片轮转调度这么好，为什么还会出现死机情况?
+
+
+
+
+
+
 
 #### 程序跟进程比较，是否一一对应
 
@@ -790,11 +829,39 @@ SHR：除了自身进程的共享内存，也包括其他进程的共享内存�
 
 - 一个进程的实际内存也就是进程的独占内存，计算方式为：驻留内存RES-共享内存SHR；
 
-#### 既然多优先级队列+时间片轮转调度这么好，为什么还会出现死机情况?
+#### 中断
+
+**中断**是指一个硬件或软件发出的请求（电信号），要求CPU暂停当前的工作转手去处理更加重要的事情。
+
+中断有两种类型：一种称为**硬件中断**，这种中断来自于硬件的异常或事件发生；另一种称为**软件中断**，软件中断通常是一条指令（i386下是int），带有一个参数记录中断号，使用这条指令用户可以手动触发某个中断并执行中断处理程序。
+
+中断一般有两个属性，**中断号**和**中断处理程序**（ISR，Interrupt Service Routine）。在内核中，有一个数组称为**中断向量表**，包含了中断号及其对应中断处理程序的指针。中断到来时，CPU暂停当前执行的代码，根据中断的中断号，在中断向量表中找到对应的中断处理程序，并调用它。中断处理程序执行完成之后，CPU会继续执行之前的代码。
+
+> 切换堆栈（此步在int指令中完成）
+
+在实际执行0x80号中断向量所对应的中断处理程序（system_call）之前，CPU首先要进行堆栈切换，即从用户态切换到内核态。从中断处理函数中返回时，程序当前栈还要从内核栈切换回用户栈。
+
+- 所谓的当前栈，值得是esp（栈指针）的值所在的栈空间。如果esp的值位于用户栈的范围内，那么程序的当前栈就是用户栈，反之亦然。此外，寄存器ss的值还应该指向当前栈所在的页。
+  所以，将当前栈由用户栈切换为内核栈的实际行为就是：
+  （1） 保存当前的esp，ss的值（保证存在内核栈上，有int指令自动地由硬件完成）
+  （2） 将esp，ss的值设置为内核栈的相应值
+- 当0x80号中断发生的时候，cpu除了切入内核态之外，还会自动完成下列几件事：
+  （1）找到当前进程的内核栈（每一个进程都有自己的内核栈）
+  （2）在内核栈中一次压入用户态的寄存器ss、esp、eflags、cs、eip
+- 而当内核从系统调用返回的时候，须要调用iret指令来回到用户态，iret指令则会从内核栈里弹出寄存器ss、esp、eflags、cs、eip的值，使得栈恢复到用户态的状态。
+- ![切换堆栈](https://img-blog.csdnimg.cn/20200709211543586.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2ODIyMjE3,size_16,color_FFFFFF,t_70)
+
+
+
+
+
+
 
 
 
 #### 系统调用的过程
+
+系统调用一般是由用户态需要调用一些内核态资源时所采用的方式，
 
 由于系统的有限资源可能被多个不同的应用程序访问，因此，如果不加以保护，那么用程序难免产生冲突。所以，现代操作系统都将可能产生冲突的系统资源给保护起来，阻止应用程序直接访问。这些系统资源包括文件、网络、IO、各种设备等。为了让应用程序有能力访问系统资源，也为了让应用程序能够借助操作系统做一些必须由操作系统支持的行为。每个操作系统都会提供一套接口，以供应用程序使用。这些接口往往通过中断来实现。
 
@@ -843,8 +910,6 @@ SHR：除了自身进程的共享内存，也包括其他进程的共享内存�
 - 利用抢占恢复
   - 利用回滚恢复
   - 通过杀死进程恢复
-
-
 
 **连续内存分配与非连续内存分配对比：**
 
@@ -1787,11 +1852,23 @@ weak_ptr是一种**不控制对象生命周期的智能指针**, 它**指向一�
 
 
 
-#### 空悬指针与野指针？怎么避免空悬指针？
+#### 空指针与野指针？怎么避免空指针？
 
 
 
 #### NULL与nullptr差别
+
+nullptr是C++11版本中新加入的，它的出现是为了解决NULL表示空指针在C++中具有二义性的问题；
+
+在C++中，NULL实际上是0.因为C++中不能把void*类型的指针隐式转换成其他类型的指针，所以为了结果空指针的表示问题，C++引入了0来表示空指针，这样就有了上述代码中的NULL宏定义。但是实际上，用NULL代替0表示空指针在函数重载时会出现问题，程序执行的结果会与我们的想法不同，
+
+
+
+#### void*指针
+
+
+
+
 
 
 
@@ -2301,12 +2378,65 @@ public:
 
 #### leetcode 25 K个一组反转链表；
 
-
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        if(head == NULL) return head;
+        int count = k;
+        ListNode* ptr = head;
+        ListNode* cur = head;
+        ListNode* pre = head;
+        bool first = true;
+        while(ptr != NULL){
+            while(count != 1){
+                ptr = ptr->next;
+                --count;
+                if(ptr == NULL)
+                    return head;
+            }
+            ptr = cur;
+            if(first == true){
+                cur = reverseN(cur,k);
+                head = cur;
+                first = false;
+            }
+            else{
+                cur = reverseN(cur,k);
+                pre->next = cur;
+            }
+            cur = succ;
+            pre = ptr;
+            ptr = succ;
+            count = k;
+        }
+        return head;
+    }
+    ListNode* reverseN(ListNode* head,int n){
+        if(n == 1){
+            succ = head->next;
+            return head;
+        }
+        ListNode* last = reverseN(head->next,n-1);
+        head->next->next = head;
+        head->next = succ;       
+        return last;
+    }
+    ListNode* succ;
+};
+```
 
 #### 判断链表是否有环,并返回入环节点
 
 ```c++
-//
 /**
  * Definition for singly-linked list.
  * struct ListNode {
@@ -2318,20 +2448,19 @@ public:
 class Solution {
 public:
     ListNode *detectCycle(ListNode *head) {
-        if(head == NULL) return NULL;
-        if(head->next == head) return head;
-        ListNode* first = head;
-        ListNode* second = head;
-        while(second != NULL && second->next != NULL){
-            first = first->next;
-            second = second->next->next;
-            if(first == second){
-                first = head;
-                while(first != second){
-                    first = first->next;
-                    second = second->next;
+        if(head == NULL) return head;
+        ListNode* slow = head;
+        ListNode* fast = head;
+        while(fast != NULL && fast->next != NULL){
+            slow = slow->next;
+            fast = fast->next->next;
+            if(slow == fast){
+                slow = head;
+                while(slow != fast){
+                    slow = slow->next;
+                    fast = fast->next;
                 }
-                return first;
+                return slow;
             }
         }
         return NULL;
@@ -2339,15 +2468,31 @@ public:
 };
 ```
 
-#### 判断两个链表是否相交
-
-```c++
-//
-```
-
 #### 单链表只遍历一次，要找到链表的中间位置要怎么做；
 
-
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* middleNode(ListNode* head) {
+        if(head == NULL) return NULL;
+        ListNode* slow = head;
+        ListNode* fast = head;
+        while(fast != NULL && fast->next != NULL){
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        return slow;
+    }
+};
+```
 
 #### 找到两个链表的首个公共节点；
 
@@ -2364,7 +2509,6 @@ public:
 class Solution {
 public:
     ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
-        if(headA == NULL || headB == NULL) return NULL;
         ListNode* first = headA;
         ListNode* second = headB;
         while(first != second){
@@ -2376,7 +2520,7 @@ public:
 };
 ```
 
-#### 二叉树的Z型遍历；
+#### 二叉树的Z型遍历
 
 ```c++
 //Z型遍历
@@ -2407,7 +2551,7 @@ public:
                     level.push_back(root->val);
                     if(root->left != NULL) deque.push_back(root->left);
                     if(root->right != NULL) deque.push_back(root->right);
-                }
+                } 
                 else{
                     root = deque.back();
                     deque.pop_back();
@@ -2422,6 +2566,22 @@ public:
     }
 };
 ```
+
+#### 在 O(n log n) 时间复杂度和常数级空间复杂度下，对链表进行排序。
+
+
+
+#### 给定一个字符串 s，将 s 分割成一些子串，使每个子串都是回文串。返回 s 所有可能的分割方案。  
+
+
+
+#### 计算数组的小和
+
+
+
+#### 合并两个数组并排序
+
+
 
 #### 二叉树的层序遍历
 
@@ -2502,14 +2662,16 @@ public:
 
 LFU leetcode 460
 
-场景类算法题有依赖关系的进程启动管理
+
 
 二分法求浮点数平方根，不得递归，精度要求0.001 
 
-多线程打印ABCD
+
+
+#### 多线程打印ABCD
 
 ```c++
-#
+
 ```
 
 #### 实现两个线程交替打印AB
