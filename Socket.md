@@ -189,13 +189,13 @@ I/O 密集型进程所执行的 I/O 操作比执行的处理操作更多。CPU �
 
 > 异步阻塞IO
 
-**配置的是非阻塞** **I/O****，然后使用阻塞** **select** **系统调用来确定一个** **I/O** **描述符何时有操作**。
+配置的是非阻塞 I/O，然后使用阻塞 select 系统调用来确定一个 I/O 描述符何时有操作。
 
 ![image](http://images.cnblogs.com/cnblogs_com/zhuowei/WindowsLiveWriter/synchronousasynchronousblockingnonblocki_A122/image_thumb_3.png)
 
 > 异步非阻塞IO
 
-**读请求会立即返回，说明** **read** **请求已经成功发起了。在后台完成读操作时，应用程序然后会执行其他处理操作。当** **read** **的响应到达时，就会产生一个信号或执行一个基于线程的回调函数来完成这次** **I/O** **处理过程。**
+读请求会立即返回，说明 read 请求已经成功发起了。在后台完成读操作时，应用程序然后会执行其他处理操作。当 read 的响应到达时，就会产生一个信号或执行一个基于线程的回调函数来完成这次 I/O 处理过程。
 
 ![image](http://images.cnblogs.com/cnblogs_com/zhuowei/WindowsLiveWriter/synchronousasynchronousblockingnonblocki_A122/image_thumb_4.png)
 

@@ -556,3 +556,50 @@ delete from myview1 where empno = 7369;
 
 
 
+
+
+sql语句
+
+```mysql
+Student
+Sid学号		 Sname学生姓名		 Sage学生年龄		Ssex学生性别
+----------------------------------------------------------------------
+Course
+Cid课程编号		Cname课程名称		Tid教师编号
+----------------------------------------------------------------------
+SC
+Sid学号		  Cid课程编号		 score成绩		
+----------------------------------------------------------------------
+Teacher 
+Tid教师编号		 Tname教师名字
+----------------------------------------------------------------------
+1、查询“001”课程比“002”课程成绩高的所有学生的学号
+select a.Sid from
+(select Sid,score from SC Cid = '001') a,
+(select Sid,score from SC Cid = '002') b
+where a.Sid = b.Sid and a.score > b.score;
+2、查询平均成绩大于60分的同学的学号和平均成绩
+select Sid,avg(score) from
+SC group by Sid having avg(socre) > 60;
+3、查询所有同学的学号、姓名、选课数、总成绩
+select s.Sid,s.Sname,count(sc.Cid),sum(score)
+from Student s,SC sc
+where s.Sid = sc.Sid
+group by SC.Sid;
+select s.Sid,s.Sname,count_cid,count_score
+from Student s
+left join 
+(select Sid,count(Cid) as count_cid,sum(score) as count_score from SC group by Sid) as sc
+on s.Sid = sc.Sid;
+4、查询姓‘李’的老师的个数：
+select count(Tname) from Teacher where Tname like '李%';
+5、查询没有学过“叶平”老师可的同学的学号、姓名：
+select Sid,Sname from
+
+
+```
+
+
+
+
+
