@@ -777,3 +777,587 @@ public:
 //34  在排序数组中查找元素的第一个和最后一个位置
 ```
 
+
+
+## 手撕题目
+
+### 链表
+
+#### 建立一个双向链表；
+
+#### 设计一个数据结构 list:  rpush rpop lpush lpop index 五种方法的时间复杂度均为 O(1)
+
+
+
+#### 反转链表
+
+```c++
+//递归法
+struct ListNode{
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x),next(NULL) {}
+};
+class solution{
+public:
+    ListNode * reverseList(ListNode *head){
+        if(head == NULL || head->next == NULL) return head;
+        ListNode * last = reverseList(head->next);
+        head->next->next = head;
+        head->next = NULL;
+        return last;        
+    }
+};
+//迭代法
+class solution{
+public:
+    ListNode * reverseList(ListNode *head){
+        if(head == NULL) return NULL;
+        ListNode * pre = NULL;
+        ListNode * cur = head;
+        while(cur != NULL){
+            ListNode * temp = cur->next;
+            cur->next = pre;
+            pre = cur;
+            cur = temp;
+        }
+        return pre;
+    }
+}
+```
+
+#### leetcode 92 反转链表从m到n
+
+```c++
+//迭代法
+struct ListNode{
+    int val;
+    ListNode * next;
+    ListNode(int x) : val(x),next(NULL) {}
+}
+class solution{
+public:
+    ListNode * reverse(ListNode *head, int m, int n){
+        if(m == 1){
+            ListNode *ptr = reverseN(head,n);
+            return ptr;
+        }
+        ListNode *last = reverse(head->next,m-1,n-1);
+        head->next = last;
+        return head;
+    }
+    ListNode * reverseN(ListNode *head, int n){
+        if(n == 1){
+            successed = head->next;
+            return head;
+        }
+        ListNode *last = reverseN(head->next,n-1);
+        head->next->next = head;
+        head->next = successed;
+        return last;
+    }
+    ListNode *successed;
+};
+```
+
+#### leetcode 25 K个一组反转链表；
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        if(head == NULL) return head;
+        int count = k;
+        ListNode* ptr = head;
+        ListNode* cur = head;
+        ListNode* pre = head;
+        bool first = true;
+        while(ptr != NULL){
+            while(count != 1){
+                ptr = ptr->next;
+                --count;
+                if(ptr == NULL)
+                    return head;
+            }
+            ptr = cur;
+            if(first == true){
+                cur = reverseN(cur,k);
+                head = cur;
+                first = false;
+            }
+            else{
+                cur = reverseN(cur,k);
+                pre->next = cur;
+            }
+            cur = succ;
+            pre = ptr;
+            ptr = succ;
+            count = k;
+        }
+        return head;
+    }
+    ListNode* reverseN(ListNode* head,int n){
+        if(n == 1){
+            succ = head->next;
+            return head;
+        }
+        ListNode* last = reverseN(head->next,n-1);
+        head->next->next = head;
+        head->next = succ;       
+        return last;
+    }
+    ListNode* succ;
+};
+```
+
+#### 判断链表是否有环,并返回入环节点
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode *detectCycle(ListNode *head) {
+        if(head == NULL) return head;
+        ListNode* slow = head;
+        ListNode* fast = head;
+        while(fast != NULL && fast->next != NULL){
+            slow = slow->next;
+            fast = fast->next->next;
+            if(slow == fast){
+                slow = head;
+                while(slow != fast){
+                    slow = slow->next;
+                    fast = fast->next;
+                }
+                return slow;
+            }
+        }
+        return NULL;
+    }
+};
+```
+
+#### 单链表只遍历一次，要找到链表的中间位置要怎么做；
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* middleNode(ListNode* head) {
+        if(head == NULL) return NULL;
+        ListNode* slow = head;
+        ListNode* fast = head;
+        while(fast != NULL && fast->next != NULL){
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        return slow;
+    }
+};
+```
+
+#### 找到两个链表的首个公共节点；
+
+```c++
+//ok
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        ListNode* first = headA;
+        ListNode* second = headB;
+        while(first != second){
+            first = first == NULL ? headB : first->next;
+            second = second == NULL ? headA : second->next;
+        }
+        return first;
+    }
+};
+```
+
+#### 二叉树的Z型遍历
+
+```c++
+//Z型遍历
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {//BFS+deque  法二：层序遍历，奇数reverse偶数不反转；
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        if(root == NULL) return {};
+        vector<vector<int>> res;
+        deque<TreeNode*> deque;
+        deque.push_back(root);
+        bool sw = true;
+        while(!deque.empty()){
+            int size = deque.size();
+            vector<int> level;
+            while(size--)
+                if(sw == true){
+                    root = deque.front();
+                    deque.pop_front();
+                    level.push_back(root->val);
+                    if(root->left != NULL) deque.push_back(root->left);
+                    if(root->right != NULL) deque.push_back(root->right);
+                } 
+                else{
+                    root = deque.back();
+                    deque.pop_back();
+                    level.push_back(root->val);
+                    if(root->right != NULL) deque.push_front(root->right);
+                    if(root->left != NULL) deque.push_front(root->left);
+                }
+            res.push_back(level);
+            sw = !sw;
+        }
+        return res;        
+    }
+};
+```
+
+#### 合并两个有序链表
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        ListNode dummyHead(0);
+        ListNode* ptr = &dummyHead;
+        while(l1 && l2){
+            if(l1->val < l2->val){
+                ptr->next = l1;
+                ptr = l1;
+                l1 = l1->next;
+            }
+            else{
+                ptr->next = l2;
+                ptr = l2;
+                l2 = l2->next;
+            }
+        }
+        ptr->next = l1 ? l1 : l2;
+        return dummyHead.next;
+    }
+};
+```
+
+#### 在 O(n log n) 时间复杂度和常数级空间复杂度下，对链表进行排序。
+
+```c++
+//法1：借助vector进行排序，然后重新装填到链表中，时间O（2n+nlogn),空间O(n);
+//法2：利用归并排序的递归法，时间O(nlogn),空间O(n+logn);
+//法3：利用归并排序的button to up方法，时间O(nlogn)，空间O(1);
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* sortList(ListNode* head) {
+        ListNode dummyNode(0);
+        dummyNode.next = head;
+        int length = 0;
+        ListNode* p = head;
+        while(p){
+            p = p->next;
+            ++length;
+        }
+        for(int size = 1;size < length;size <<= 1){
+            ListNode* cur = dummyNode.next;
+            ListNode* tail = &dummyNode;
+            
+            while(cur){
+                auto left = cur;
+                auto right = cut(left,size);
+                cur = cut(right,size);
+
+                tail->next = merge(left,right);
+                while(tail->next) tail = tail->next;
+            }
+        }
+        return dummyNode.next;
+    }
+    ListNode* cut(ListNode* head,int size){
+        auto ptr = head;
+        while(--size && ptr){
+            ptr = ptr->next;
+        }
+        if(ptr == NULL)
+            return NULL;
+        ListNode* next = ptr->next;
+        ptr->next = NULL;
+        return next;
+    }
+    ListNode* merge(ListNode* left,ListNode* right){
+        ListNode dummyNode(0);
+        ListNode* ptr = &dummyNode;
+        while(left && right){
+            if(left->val < right->val){
+                ptr->next = left;
+                ptr = ptr->next;
+                left = left->next;
+            }
+            else{
+                ptr->next = right;
+                ptr = ptr->next;
+                right = right->next;
+            }
+        }
+        ptr->next = left ? left : right;
+        return dummyNode.next;
+    }
+};
+```
+
+#### 给定一个字符串 s，将 s 分割成一些子串，使每个子串都是回文串。返回 s 所有可能的分割方案。  
+
+
+
+#### 计算数组的小和
+
+
+
+#### 合并两个数组并排序
+
+
+
+#### 二叉树的层序遍历
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {//BFS
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        if(root == NULL) return {};
+        queue<TreeNode*> deq;
+        deq.push(root);
+        vector<vector<int>> res;
+        while(!deq.empty()){
+            int size = deq.size();
+            vector<int> vec;
+            while(size--){
+                root = deq.front();
+                deq.pop();
+                vec.push_back(root->val);
+                if(root->left != NULL) deq.push(root->left);
+                if(root->right != NULL) deq.push(root->right);
+            }
+            res.push_back(vec);
+        }    
+        return res;            
+    }
+};
+//自底向上的层序遍历
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<vector<int>> levelOrderBottom(TreeNode* root) {
+        if(root == NULL) return {};
+        int n = getDepth(root);
+        vector<vector<int>> res(n,vector<int>());
+        queue<TreeNode*> queue;
+        queue.push(root);
+        while(!queue.empty()){
+            int size = queue.size();
+            vector<int> level;
+            while(size--){
+                root = queue.front();
+                queue.pop();
+                level.push_back(root->val);
+                if(root->left != NULL) queue.push(root->left);
+                if(root->right != NULL) queue.push(root->right);
+            }
+            res[--n] = level;
+        }
+        return res;
+    }
+    int getDepth(TreeNode * root){
+        if(root == NULL) return 0;
+        return max(getDepth(root->left),getDepth(root->right))+1;
+    }
+};
+
+
+```
+
+
+
+LFU leetcode 460
+
+
+
+二分法求浮点数平方根，不得递归，精度要求0.001 
+
+
+
+#### 多线程打印ABCD
+
+```c++
+
+```
+
+#### 实现两个线程交替打印AB
+
+```c++
+#include<iostream>
+#include<windows.h>
+#include<string>
+
+using namespace std;
+
+class THREAD_DATA{
+public:
+    int maxnum;
+    string data;
+    THREAD_DATA() : maxnum(0) ,data("") {}
+    THREAD_DATA(int num,string str) : maxnum(num),data(str) {}
+};
+
+HANDLE cout_Mutex;
+HANDLE hEvent;
+
+DWORD WINAPI MyThread1(LPVOID lpParamter){
+
+    THREAD_DATA *data = (THREAD_DATA *)lpParamter;
+    for(int i = 0;i < data->maxnum;++i){
+        WaitForSingleObject(hEvent,INFINITE);
+        cout<<data->data<<"A"<<endl;
+        //ReleaseMutex(cout_Mutex);
+        SetEvent(hEvent);
+    }
+    return 0L;
+};
+
+DWORD WINAPI MyThread2(LPVOID lpParamter){
+
+    THREAD_DATA *data = (THREAD_DATA *)lpParamter;
+    for(int i = 0;i < data->maxnum;++i){
+        WaitForSingleObject(hEvent,INFINITE);
+        cout<<data->data<<"B"<<endl;
+        //ReleaseMutex(cout_Mutex);
+        SetEvent(hEvent);
+    }
+    return 0L;
+}
+
+int main(){
+
+    THREAD_DATA thread_data1,thread_data2;
+    thread_data1.maxnum = 5;
+    thread_data1.data = "线程1----";
+    thread_data2.maxnum = 5;
+    thread_data2.data = "线程2----";
+
+    cout_Mutex = CreateMutex(NULL,FALSE,NULL);
+    hEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+
+    HANDLE hThread1 = CreateThread(NULL,0,MyThread1,&thread_data1,0,NULL);
+    HANDLE hThread2 = CreateThread(NULL,0,MyThread2,&thread_data2,0,NULL);
+    CloseHandle(hThread1);
+    CloseHandle(hThread2);
+    system("pause");   
+    return 0;
+}
+```
+
+手写大小端转换函数 
+
+
+
+手写socket断点续传文件
+
+手撕智能指针
+
+斐波那契数列 
+
+二叉树的最大路径和、二叉树最大和的路径；
+
+DFS、BFS
+
+整数转化成字符串；
+
+迭代二叉树的深度；
+
+0-n-1中缺失的数字，两种方法；
+
+二叉搜索树后序遍历；
+
+IP地址字符串转换为32位整数；
+
+两个有序数组，其中一个有足够空位，不使用额外空间排序到含空位数组中；
+
+求二叉树两个节点的最小距离；
+
+对大规模数据进行去重；
+
+寻找无序整数数组中第一个缺失的正数；
+
+对给出一个数组中的每个元素求因数个数；
+
+二维数组回旋打印；
