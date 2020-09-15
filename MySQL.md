@@ -601,5 +601,128 @@ select Sid,Sname from
 
 
 
+### MySQL 的 API
+
+1、连接数据库
+
+```c++
+MYSQL *mysql_real_connect(MYSQL *mysql, const char *host, const char *user, const char *passwd, const char *db, unsigned int port, const char *unix_socket, unsigned int client_flag)；
+/*该函数用于连接数据库
+• 第一个参数应该是一个现存MYSQL结构的地址。在调用mysql_real_connect()之前，你必须调用mysql_init()初始化MYSQL结构。见下面的例子。
+• host值可以是一个主机名或一个IP地址。如果host是NULL或字符串"localhost"，假定是到本地主机的一个连接。如果OS支持套接字(Unix)或命名管道(Win32)，使用他们而不是TCP/IP与服务器连接。
+• user参数包含用户的MySQL登录ID。如果user是NULL，假定是当前用户。在Unix下，它是当前登录名。在Windows ODBC下，必须明确地指定当前用户名字。见16.4 怎样填写ODBC管理程序中各种域。
+• passwd参数为user包含口令。如果passwd是NULL，只有在user表中对于有一个空白口令字段的用户的条目将被检查一个匹配。这允许数据库主管设置MySQL权限，使用户获得不同的口令，取决于他们是否已经指定一个口令。注意：不要试图在调用mysql_real_connect()前加密口令；口令加密自动被客户API处理。
+• db是数据库名。如果db不是NULL，连接将缺省数据库设置为这个值。
+• 如果port不是0，值对于TCP/IP连接将用作端口号。注意host参数决定连接的类型。
+• 如果unix_socket不是NULL，字符串指定套接字或应该被使用的命名管道。注意host参数决定连接的类型。
+• client_flag值通常是0，但是在很特殊的情况下可以被设置为下列标志的组合：
+标志名字 意味着的标志
+CLIENT_FOUND_ROWS 返回找到的(匹配的)行数，不是受到影响的行数。
+CLIENT_NO_SCHEMA 不允许db_name.tbl_name.col_name语法。这是为了ODBC；如果你使用该语法，导致语法分析器产生一个错误，它是为在一些ODBC程序捕捉错误是有用。
+CLIENT_COMPRESS 使用压缩协议。
+CLIENT_ODBC 客户是一个ODBC客户。这使mysqld变得对ODBC更友好。
+如果连接成功，一个 MYSQL*连接句柄。如果连接失败，NULL。对一个成功的连接，返回值与第一个参数值相同，除非你传递NULL给该参数。
+*/
+```
+
+2、数据库选择
+
+```c++
+int mysql_select_db(MYSQL *mysql, const char *db);
+/*
+使得由db指定的数据库成为 在由mysql指定的连接上的缺省(当前)数据库。在随后的查询中，这个数据库对于不包括一个显式的数据库指定符的表的引用是缺省数据库。
+除非连接的用户能被认证允许使用数据库，否则mysql_select_db()失败。
+成功，零。如果发生一个错误，非零。
+*/
+```
+
+3、执行SQL查询
+
+```c++
+int mysql_real_query(MYSQL *mysql, const char *query, unsigned int length);
+/*
+执行由query指向的SQL查询，它应该是一个length个字节的字符串。查询必须由一个单个的SQL语句组成。你不应该在语句后增加一个终止的分号(“;”)或\g。
+对于包含二进制数据的查询，你必须使用mysql_real_query()而不是mysql_query()，因为二进制代码数据可能包含“\0”字符，而且，mysql_real_query()比mysql_query()更快，因为它对查询字符串调用strlen()。
+如果查询成功，零。如果发生一个错误，非零。
+*/
+```
+
+4、查询结果返回
+
+```c++
+MYSQL_RES *mysql_store_result(MYSQL *mysql);
+/*
+用于将mysql_real_query查询结果返回
+返回MYSQL_RES结构，如果获取失败则返回空
+*/
+```
+
+5、读取MYSQL_RES
+
+```C++
+MYSQL_ROW *mysql_fetch_row(MYSQL_RES* res);
+/*
+用于读取MYSQL_RES
+返回表示MYSQL_RES的下一行的MYSQL_ROW
+*/
+```
+
+
+
+```c++
+//mysql.h中常用的API
+；
+    mysql_affected_rows() 返回被最新的UPDATE, DELETE或INSERT查询影响的行数。 
+    mysql_close() 关闭一个服务器连接。 
+    mysql_connect() 连接一个MySQL服务器。该函数不推荐；使用mysql_real_connect()代替。 
+    mysql_change_user() 改变在一个打开的连接上的用户和数据库。 
+    mysql_create_db() 创建一个数据库。该函数不推荐；而使用SQL命令CREATE DATABASE。 
+    mysql_data_seek() 在一个查询结果集合中搜寻一任意行。 
+    mysql_debug() 用给定字符串做一个DBUG_PUSH。 
+    mysql_drop_db() 抛弃一个数据库。该函数不推荐；而使用SQL命令DROP DATABASE。
+    mysql_dump_debug_info() 让服务器将调试信息写入日志文件。
+    mysql_eof() 确定是否已经读到一个结果集合的最后一行。这功能被反对; mysql_errno()或mysql_error()可以相反被使用。
+    mysql_errno() 返回最近被调用的MySQL函数的出错编号。
+    mysql_error() 返回最近被调用的MySQL函数的出错消息。
+    mysql_escape_string() 用在SQL语句中的字符串的转义特殊字符。
+    mysql_fetch_field() 返回下一个表字段的类型。 
+    mysql_fetch_field_direct () 返回一个表字段的类型，给出一个字段编号。 
+    mysql_fetch_fields() 返回一个所有字段结构的数组。
+    mysql_fetch_lengths() 返回当前行中所有列的长度。
+    mysql_fetch_row() 从结果集合中取得下一行。 
+    mysql_field_seek() 把列光标放在一个指定的列上。
+    mysql_field_count() 返回最近查询的结果列的数量。
+    mysql_field_tell() 返回用于最后一个mysql_fetch_field()的字段光标的位置。 
+    mysql_free_result() 释放一个结果集合使用的内存。
+    mysql_get_client_info() 返回客户版本信息。 
+    mysql_get_host_info() 返回一个描述连接的字符串。 
+    mysql_get_proto_info() 返回连接使用的协议版本。
+    mysql_get_server_info() 返回服务器版本号。 
+    mysql_info() 返回关于最近执行得查询的信息。 
+    mysql_init() 获得或初始化一个MYSQL结构。 
+    mysql_insert_id() 返回有前一个查询为一个AUTO_INCREMENT列生成的ID。 
+    mysql_kill() 杀死一个给定的线程。 
+    mysql_list_dbs() 返回匹配一个简单的正则表达式的数据库名。 
+    mysql_list_fields() 返回匹配一个简单的正则表达式的列名。
+    mysql_list_processes() 返回当前服务器线程的一张表。
+    mysql_list_tables() 返回匹配一个简单的正则表达式的表名。
+    mysql_num_fields() 返回一个结果集合重的列的数量。 
+    mysql_num_rows() 返回一个结果集合中的行的数量。 
+    mysql_options() 设置对mysql_connect()的连接选项。 
+    mysql_ping() 检查对服务器的连接是否正在工作，必要时重新连接。
+    mysql_query() 执行指定为一个空结尾的字符串的SQL查询。 
+    mysql_real_connect() 连接一个MySQL服务器。
+    mysql_real_query() 执行指定为带计数的字符串的SQL查询。
+    mysql_reload() 告诉服务器重装授权表。 
+    mysql_row_seek() 搜索在结果集合中的行，使用从mysql_row_tell()返回的值。 
+    mysql_row_tell() 返回行光标位置。 
+    mysql_select_db() 连接一个数据库。 
+    mysql_shutdown() 关掉数据库服务器。 
+    mysql_stat() 返回作为字符串的服务器状态。
+    mysql_store_result() 检索一个完整的结果集合给客户。
+    mysql_thread_id() 返回当前线程的ID。 
+    mysql_use_result() 初始化一个一行一行地结果集合的检索。
+```
+
 
 
